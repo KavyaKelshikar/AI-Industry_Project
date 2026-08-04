@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Industrial AI Knowledge System - Admin Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Geist:wght@400;500&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#00174b",
+                    "surface-bright": "#f9f9ff",
+                    "on-primary-container": "#eeefff",
+                    "surface": "#f9f9ff",
+                    "error": "#ba1a1a",
+                    "on-background": "#111c2d",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "primary-fixed": "#dbe1ff",
+                    "outline-variant": "#c3c6d7",
+                    "surface-dim": "#cfdaf2",
+                    "on-surface-variant": "#434655",
+                    "inverse-primary": "#b4c5ff",
+                    "inverse-on-surface": "#ecf1ff",
+                    "surface-container-low": "#f0f3ff",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#e4f2ff",
+                    "on-secondary-container": "#54647a",
+                    "inverse-surface": "#263143",
+                    "surface-container-highest": "#d8e3fb",
+                    "secondary": "#505f76",
+                    "background": "#f9f9ff",
+                    "surface-tint": "#0053db",
+                    "surface-container-lowest": "#ffffff",
+                    "primary": "#004ac6",
+                    "on-secondary-fixed": "#0b1c30",
+                    "surface-container-high": "#dee8ff",
+                    "outline": "#737686",
+                    "on-surface": "#111c2d",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#d3e4fe",
+                    "on-tertiary-fixed-variant": "#004c6e",
+                    "secondary-container": "#d0e1fb",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed": "#c9e6ff",
+                    "tertiary-container": "#0074a6",
+                    "tertiary-fixed-dim": "#89ceff",
+                    "surface-variant": "#d8e3fb",
+                    "on-tertiary-fixed": "#001e2f",
+                    "tertiary": "#005a82",
+                    "primary-container": "#2563eb",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-error": "#ffffff",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "surface-container": "#e7eeff",
+                    "on-tertiary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "container-max": "1440px",
+                    "xxl": "48px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "base": "4px",
+                    "xs": "4px",
+                    "md": "16px",
+                    "xl": "32px"
+            },
+            "fontFamily": {
+                    "label-md": ["Geist"],
+                    "headline-lg": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "code-sm": ["Geist"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "code-sm": ["13px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(8px);
+      }
+      .chart-trend-up {
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: draw 2s ease-out forwards;
+      }
+      @keyframes draw {
+        to { stroke-dashoffset: 0; }
+      }
+      body {
+        background-color: #f9f9ff;
+      }
+    </style>
+</head>
+<body class="min-h-screen text-on-surface font-body-md overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="bg-surface-container-lowest dark:bg-surface-container-low border-b border-outline-variant dark:border-outline fixed top-0 w-full z-50">
+<div class="flex justify-between items-center w-full px-lg max-w-container-max mx-auto h-16">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim" data-icon="factory">factory</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Admin Overview</h1>
+</div>
+<div class="flex items-center gap-md">
+<button class="material-symbols-outlined p-sm rounded-full hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-100" data-icon="search">search</button>
+<button class="material-symbols-outlined p-sm rounded-full hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors active:scale-95 duration-100" data-icon="settings_suggest">settings_suggest</button>
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-xs font-bold">AD</div>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-lg max-w-container-max mx-auto">
+<!-- Welcome Hero with Interactive Element -->
+<section class="mb-xl relative overflow-hidden rounded-xl p-xl bg-primary text-on-primary shadow-sm">
+<div class="relative z-10 max-w-2xl">
+<h2 class="font-headline-lg text-headline-lg mb-sm">System Intelligence at a Glance</h2>
+<p class="text-body-lg opacity-90">Monitor global industrial knowledge processes and AI performance metrics in real-time across all plant locations.</p>
+</div>
+<div class="absolute right-0 top-0 h-full w-1/3 opacity-20 pointer-events-none">
+
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Analytics Cards Grid (Left Column) -->
+<div class="lg:col-span-8 space-y-lg">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Total Users -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant hover:border-primary transition-all duration-300">
+<div class="flex justify-between items-start mb-md">
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-sm rounded-lg" data-icon="group">group</span>
+<span class="text-primary font-bold text-label-md">+12%</span>
+</div>
+<p class="text-on-surface-variant font-label-md uppercase tracking-wider">Total Users</p>
+<h3 class="font-headline-md text-headline-md mt-xs">1,284</h3>
+</div>
+<!-- Total Documents -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant hover:border-primary transition-all duration-300">
+<div class="flex justify-between items-start mb-md">
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-sm rounded-lg" data-icon="description">description</span>
+<span class="text-primary font-bold text-label-md">+5%</span>
+</div>
+<p class="text-on-surface-variant font-label-md uppercase tracking-wider">Documents</p>
+<h3 class="font-headline-md text-headline-md mt-xs">45.2k</h3>
+</div>
+<!-- Total Queries -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant hover:border-primary transition-all duration-300">
+<div class="flex justify-between items-start mb-md">
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-sm rounded-lg" data-icon="search_spark">search_spark</span>
+<span class="text-primary font-bold text-label-md">+18%</span>
+</div>
+<p class="text-on-surface-variant font-label-md uppercase tracking-wider">AI Queries</p>
+<h3 class="font-headline-md text-headline-md mt-xs">89.4k</h3>
+</div>
+<!-- AI Accuracy -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant hover:border-primary transition-all duration-300">
+<div class="flex justify-between items-start mb-md">
+<span class="material-symbols-outlined text-tertiary bg-tertiary-fixed p-sm rounded-lg" data-icon="check_circle">check_circle</span>
+<span class="text-tertiary font-bold text-label-md">Stable</span>
+</div>
+<p class="text-on-surface-variant font-label-md uppercase tracking-wider">AI Accuracy</p>
+<h3 class="font-headline-md text-headline-md mt-xs">98.2%</h3>
+</div>
+<!-- Avg Response -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant hover:border-primary transition-all duration-300">
+<div class="flex justify-between items-start mb-md">
+<span class="material-symbols-outlined text-primary bg-primary-fixed p-sm rounded-lg" data-icon="timer">timer</span>
+<span class="text-primary font-bold text-label-md">-0.2s</span>
+</div>
+<p class="text-on-surface-variant font-label-md uppercase tracking-wider">Avg Latency</p>
+<h3 class="font-headline-md text-headline-md mt-xs">1.2s</h3>
+</div>
+<!-- Active Users -->
+<div class="bg-primary-container p-lg rounded-xl shadow-sm border border-transparent text-on-primary-container relative overflow-hidden group">
+<div class="relative z-10">
+<div class="flex justify-between items-start mb-md">
+<span class="material-symbols-outlined bg-white/20 p-sm rounded-lg" data-icon="pulse">switch_account</span>
+<div class="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+</div>
+<p class="font-label-md uppercase tracking-wider opacity-90">Active Now</p>
+<h3 class="font-headline-md text-headline-md mt-xs">412</h3>
+</div>
+<div class="absolute inset-0 bg-white/5 group-hover:scale-110 transition-transform duration-700"></div>
+</div>
+</div>
+<!-- Charts Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg">
+<!-- Queries per Day -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant h-80 flex flex-col">
+<div class="flex justify-between items-center mb-md">
+<h4 class="font-bold text-on-surface">Queries per Day</h4>
+<select class="text-label-md border-none bg-surface-container rounded-lg px-sm py-xs">
+<option>Last 7 Days</option>
+<option>Last 30 Days</option>
+</select>
+</div>
+<div class="flex-grow flex items-end relative overflow-hidden">
+<svg class="w-full h-48" preserveaspectratio="none" viewbox="0 0 400 100">
+<path class="chart-trend-up" d="M0 80 Q 50 70, 100 75 T 200 40 T 300 20 T 400 10" fill="none" stroke="#004ac6" stroke-width="3"></path>
+<path d="M0 80 Q 50 70, 100 75 T 200 40 T 300 20 T 400 10 L 400 100 L 0 100 Z" fill="url(#grad1)" opacity="0.1"></path>
+<defs>
+<lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#004ac6;stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:#004ac6;stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+</svg>
+</div>
+</div>
+<!-- Department-wise Usage -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant h-80 flex flex-col">
+<h4 class="font-bold text-on-surface mb-md">Department-wise Usage</h4>
+<div class="flex-grow flex flex-col justify-around">
+<div class="space-y-sm">
+<div class="flex justify-between text-body-sm mb-xs">
+<span>Operations</span>
+<span class="font-bold">42%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 42%"></div>
+</div>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between text-body-sm mb-xs">
+<span>Maintenance</span>
+<span class="font-bold">28%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-primary h-2 rounded-full" style="width: 28%"></div>
+</div>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between text-body-sm mb-xs">
+<span>Safety</span>
+<span class="font-bold">18%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-tertiary h-2 rounded-full" style="width: 18%"></div>
+</div>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between text-body-sm mb-xs">
+<span>HR</span>
+<span class="font-bold">12%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2">
+<div class="bg-secondary h-2 rounded-full" style="width: 12%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Side Content (Right Column) -->
+<div class="lg:col-span-4 space-y-lg">
+<!-- AI Performance Gauge -->
+<div class="bg-surface-container-lowest p-lg rounded-xl shadow-sm border border-outline-variant">
+<h4 class="font-bold text-on-surface mb-md">AI Performance Trend</h4>
+<div class="flex flex-col items-center py-md">
+<div class="relative w-32 h-32 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle cx="64" cy="64" fill="transparent" r="60" stroke="#e7eeff" stroke-width="8"></circle>
+<circle cx="64" cy="64" fill="transparent" r="60" stroke="#004ac6" stroke-dasharray="376" stroke-dashoffset="7" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-headline-md font-bold text-primary">98.2</span>
+<span class="text-label-md opacity-60">Score</span>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant text-center mt-md">Reliability remains in the top 5th percentile for industrial LLMs.</p>
+</div>
+</div>
+<!-- Recent Activity Feed -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden">
+<div class="p-lg border-b border-outline-variant flex justify-between items-center">
+<h4 class="font-bold text-on-surface">Recent Activity</h4>
+<button class="text-primary text-label-md font-bold hover:underline">View All</button>
+</div>
+<div class="divide-y divide-outline-variant">
+<!-- Activity 1 -->
+<div class="p-lg hover:bg-surface-container-low transition-colors flex gap-md">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="upload_file">upload_file</span>
+</div>
+<div>
+<p class="text-body-sm"><span class="font-semibold">New document uploaded:</span> Safety_Protocols_2024.pdf</p>
+<span class="text-xs text-on-surface-variant">2 mins ago</span>
+</div>
+</div>
+<!-- Activity 2 -->
+<div class="p-lg hover:bg-surface-container-low transition-colors flex gap-md">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+</div>
+<div>
+<p class="text-body-sm"><span class="font-semibold">User login:</span> John Doe (Plant A)</p>
+<span class="text-xs text-on-surface-variant">10 mins ago</span>
+</div>
+</div>
+<!-- Activity 3 -->
+<div class="p-lg hover:bg-surface-container-low transition-colors flex gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="database">database</span>
+</div>
+<div>
+<p class="text-body-sm"><span class="font-semibold">Document indexed:</span> Maintenance_V2</p>
+<span class="text-xs text-on-surface-variant">15 mins ago</span>
+</div>
+</div>
+<!-- Activity 4 -->
+<div class="p-lg hover:bg-surface-container-low transition-colors flex gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat_bubble">chat_bubble</span>
+</div>
+<div>
+<p class="text-body-sm"><span class="font-semibold">AI query processed:</span> 'Plant B emergency shutoff'</p>
+<span class="text-xs text-on-surface-variant">18 mins ago</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-lg py-sm bg-surface-container-lowest dark:bg-surface-container-low border-t border-outline-variant dark:border-outline shadow-sm">
+<!-- Analytics (Active) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-on-secondary-fixed-variant text-on-secondary-container dark:text-secondary-fixed rounded-xl px-md py-sm transition-all active:scale-95 duration-75" href="#">
+<span class="material-symbols-outlined" data-icon="analytics" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-md text-label-md mt-1">Analytics</span>
+</a>
+<!-- Users -->
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant dark:text-secondary-fixed-dim px-md py-sm hover:bg-surface-container-highest dark:hover:bg-on-secondary-fixed-variant transition-all active:scale-95 duration-75" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-md text-label-md mt-1">Users</span>
+</a>
+<!-- System -->
+<a class="flex flex-col items-center justify-center text-on-secondary-fixed-variant dark:text-secondary-fixed-dim px-md py-sm hover:bg-surface-container-highest dark:hover:bg-on-secondary-fixed-variant transition-all active:scale-95 duration-75" href="#">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+<span class="font-label-md text-label-md mt-1">System</span>
+</a>
+</nav>
+<script>
+      // Subtle micro-interaction: update active user count periodically
+      setInterval(() => {
+        const activeUsers = document.querySelector('h3.mt-xs:last-of-type');
+        if (activeUsers && activeUsers.innerText === '412') {
+          const change = Math.floor(Math.random() * 5) - 2;
+          activeUsers.innerText = 412 + change;
+        }
+      }, 5000);
+    </script>
+</body></html>

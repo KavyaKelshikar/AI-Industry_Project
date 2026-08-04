@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>System Settings | Industrial Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        /* Custom scrollbar for enterprise feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-low": "#f0f3ff",
+                      "tertiary": "#005a82",
+                      "outline": "#737686",
+                      "on-secondary-container": "#54647a",
+                      "surface-container-highest": "#d8e3fb",
+                      "surface-container-high": "#dee8ff",
+                      "primary-fixed": "#dbe1ff",
+                      "inverse-surface": "#263143",
+                      "surface-container-lowest": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-primary-fixed": "#00174b",
+                      "secondary": "#505f76",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#38485d",
+                      "on-tertiary-container": "#e4f2ff",
+                      "inverse-primary": "#b4c5ff",
+                      "primary-fixed-dim": "#b4c5ff",
+                      "primary": "#004ac6",
+                      "on-background": "#111c2d",
+                      "on-primary-container": "#eeefff",
+                      "error-container": "#ffdad6",
+                      "on-secondary-fixed": "#0b1c30",
+                      "secondary-fixed": "#d3e4fe",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed": "#c9e6ff",
+                      "on-error-container": "#93000a",
+                      "secondary-container": "#d0e1fb",
+                      "background": "#f9f9ff",
+                      "on-surface-variant": "#434655",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed-dim": "#b7c8e1",
+                      "inverse-on-surface": "#ecf1ff",
+                      "surface-dim": "#cfdaf2",
+                      "surface-container": "#e7eeff",
+                      "primary-container": "#2563eb",
+                      "on-secondary": "#ffffff",
+                      "tertiary-container": "#0074a6",
+                      "surface-variant": "#d8e3fb",
+                      "surface-bright": "#f9f9ff",
+                      "surface-tint": "#0053db",
+                      "outline-variant": "#c3c6d7",
+                      "on-tertiary-fixed-variant": "#004c6e",
+                      "on-tertiary-fixed": "#001e2f",
+                      "tertiary-fixed-dim": "#89ceff",
+                      "surface": "#f9f9ff",
+                      "on-surface": "#111c2d",
+                      "on-primary-fixed-variant": "#003ea8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "32px",
+                      "base": "4px",
+                      "xs": "4px",
+                      "xxl": "48px",
+                      "md": "16px",
+                      "sm": "8px",
+                      "gutter": "24px",
+                      "lg": "24px",
+                      "container-max": "1440px"
+              },
+              "fontFamily": {
+                      "body-md": ["Inter"],
+                      "label-md": ["Geist"],
+                      "display-lg": ["Inter"],
+                      "code-sm": ["Geist"],
+                      "body-lg": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "body-sm": ["Inter"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                      "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "code-sm": ["13px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex">
+<!-- Navigation Drawer (Desktop) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-surface-container-low dark:bg-inverse-surface hidden lg:flex flex-col p-md gap-sm border-r border-outline-variant dark:border-outline z-40">
+<div class="mb-xl px-sm pt-sm flex items-center gap-md">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container" style="font-variation-settings: 'FILL' 1;">insights</span>
+</div>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Industrial Intelligence</span>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-md text-label-md">Knowledge</span>
+</a>
+<a class="flex items-center gap-md p-md text-on-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-variant rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</a>
+<div class="pt-xl pb-sm px-md">
+<span class="text-[10px] font-bold uppercase tracking-widest text-outline">System Configuration</span>
+</div>
+<a class="flex items-center gap-md p-md bg-primary-container text-on-primary-container font-semibold rounded-lg transition-transform duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-md px-sm">
+<div class="flex items-center gap-md p-sm">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a high-level industrial operations manager in his late 40s wearing a crisp navy blue shirt. The lighting is clean and directional, typical of a corporate executive photo. The background is a blurred, high-tech industrial control room with soft blue and silver tones, maintaining a professional and authoritative atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDmwRmbZ0iP3qqd-THEH2TbOAlIlvKhuyXPcTyTO775fYaQTnxK7damvwpUqClMt4TrBLdeYGghE00AIuf113xsVQcu93gx3LWbqNkMZxaKfG2yMe6qIC3SRCXswSwZ8Vcgg4Z3tIX2YRNIMvUVRx1wuQVz0S4rOQbqsJdINUsFXs5PQja1-0ItbCyaQPWEU8cyH-7Iyh-CrHzTAUy2PXng3--D8Pk4_l1DuZNt8fUA56NW1quQQO8"/>
+</div>
+<div class="flex-1 overflow-hidden">
+<p class="text-on-surface font-semibold text-sm truncate">Operations Manager</p>
+<p class="text-on-surface-variant text-xs truncate">Industrial Intelligence Unit</p>
+</div>
+<span class="text-[10px] text-outline">v2.4.0</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col lg:ml-[280px] pb-24 lg:pb-0">
+<!-- Top App Bar -->
+<header class="w-full sticky top-0 z-50 bg-surface dark:bg-surface-dim shadow-sm flex items-center justify-between px-md h-16">
+<div class="flex items-center gap-sm lg:hidden">
+<button class="p-sm text-primary dark:text-primary-fixed-dim active:opacity-80 transition-all">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim lg:hidden">arrow_back</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">System Settings</h1>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-sm text-primary dark:text-primary-fixed-dim hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">search</span>
+</button>
+<button class="p-sm text-primary dark:text-primary-fixed-dim hover:bg-surface-container-high rounded-full transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Settings Canvas -->
+<div class="max-w-[800px] mx-auto w-full px-md py-lg space-y-lg">
+<!-- 1. Profile Section -->
+<section class="bg-surface-container-lowest rounded-xl p-lg shadow-sm border border-outline-variant/30 flex items-center gap-lg">
+<div class="relative group cursor-pointer">
+<div class="w-20 h-20 rounded-full overflow-hidden border-2 border-primary-container p-1 bg-white">
+<img class="w-full h-full rounded-full object-cover" data-alt="Close-up professional headshot of an executive in a minimalist corporate environment. The person has a confident expression, set against a soft-focus background of a modern architectural office. The color palette consists of primary blues, clean whites, and professional grays, echoing a high-end industrial tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbjeXwuX9vRFeabAoGpwMDrL00NQGNtT0VmaPStCqoIBKWG2S3mSv8pJYFWCjwrrr-qQJ8Jl3q9BitnNjbP2kFJDSk3IbyiZ1KRknntv-sl_Y6BxkpEwQO29b2KzpFld-n69I3F9n-YdsbFf_uQtpkFTwnD_B-Uoi6YqwTNlWc_G7zpQY-JQeAaHjhD4gCBK7NvO6KSg3-hb6YYHi7g8o3rcVkswb82xvbO0W7tL3Ymw_4f6jayyc"/>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary text-on-primary w-6 h-6 rounded-full flex items-center justify-center border-2 border-white">
+<span class="material-symbols-outlined text-xs">edit</span>
+</div>
+</div>
+<div class="flex-1">
+<h2 class="font-headline-md text-headline-md text-on-surface">Operations Manager</h2>
+<p class="text-on-surface-variant font-body-sm">ops.manager@industrial-intelligence.ai</p>
+<div class="mt-sm flex gap-xs">
+<span class="px-sm py-[2px] bg-primary-container/10 text-primary text-[10px] font-bold rounded-full border border-primary-container/20">ADMIN ACCESS</span>
+<span class="px-sm py-[2px] bg-tertiary-container/10 text-tertiary text-[10px] font-bold rounded-full border border-tertiary-container/20">UNIT LEADER</span>
+</div>
+</div>
+</section>
+<!-- 2. Password & Security -->
+<section class="space-y-sm">
+<h3 class="px-sm text-xs font-bold uppercase tracking-widest text-outline">Security & Access</h3>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden">
+<button class="w-full flex items-center justify-between p-lg hover:bg-surface-container-low transition-colors group">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 bg-secondary-container/30 text-secondary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<div class="text-left">
+<p class="font-semibold text-on-surface">Change Password</p>
+<p class="text-xs text-on-surface-variant">Update your security credentials</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+<div class="h-[1px] bg-outline-variant/30 mx-lg"></div>
+<div class="flex items-center justify-between p-lg hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 bg-secondary-container/30 text-secondary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined">phonelink_lock</span>
+</div>
+<div class="text-left">
+<p class="font-semibold text-on-surface">Two-Factor Authentication</p>
+<p class="text-xs text-on-surface-variant">Managed via SMS and Authenticator App</p>
+</div>
+</div>
+<div class="flex items-center gap-sm">
+<span class="text-xs font-medium text-primary">Active</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Notification Preferences -->
+<section class="space-y-sm">
+<h3 class="px-sm text-xs font-bold uppercase tracking-widest text-outline">Notification Preferences</h3>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-lg space-y-md">
+<div class="flex items-center justify-between">
+<div>
+<p class="font-semibold text-on-surface">Email Alerts</p>
+<p class="text-xs text-on-surface-variant">System performance and daily summaries</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<div class="h-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center justify-between">
+<div>
+<p class="font-semibold text-on-surface">SMS Alerts</p>
+<p class="text-xs text-on-surface-variant">Critical unit failure notifications</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+<div class="h-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center justify-between">
+<div>
+<p class="font-semibold text-on-surface">In-App AI Status</p>
+<p class="text-xs text-on-surface-variant">Real-time AI indexing and processing updates</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+</label>
+</div>
+</div>
+</section>
+<!-- 4. API Settings (Visual Bento Card) -->
+<section class="space-y-sm">
+<h3 class="px-sm text-xs font-bold uppercase tracking-widest text-outline">Industrial Integration</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="bg-surface-container-lowest rounded-xl p-lg border border-primary-container/20 shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+<span class="material-symbols-outlined text-[64px]">api</span>
+</div>
+<p class="text-xs font-bold text-primary mb-sm">ACTIVE API KEYS</p>
+<p class="text-2xl font-bold text-on-surface">12 Units</p>
+<p class="text-xs text-on-surface-variant mt-xs">Connected via Secure Edge Gateway</p>
+<button class="mt-md text-primary text-xs font-bold flex items-center gap-xs hover:underline">
+                            MANAGE TOKENS <span class="material-symbols-outlined text-xs">arrow_forward</span>
+</button>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-lg border border-outline-variant/30 shadow-sm">
+<div class="flex items-center justify-between mb-sm">
+<p class="text-xs font-bold text-outline uppercase">Network Health</p>
+<span class="w-2 h-2 rounded-full bg-success-container bg-green-500 animate-pulse"></span>
+</div>
+<p class="text-2xl font-bold text-on-surface">99.8%</p>
+<p class="text-xs text-on-surface-variant mt-xs">Average Industrial Uptime</p>
+<div class="mt-md w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[99.8%]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. Appearance (Theme) -->
+<section class="space-y-sm">
+<h3 class="px-sm text-xs font-bold uppercase tracking-widest text-outline">Appearance</h3>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-lg">
+<div class="grid grid-cols-3 gap-md">
+<button class="flex flex-col items-center gap-sm p-md rounded-lg border-2 border-primary bg-primary-container/5" onclick="document.documentElement.classList.remove('dark')">
+<div class="w-full h-12 bg-white rounded-md border border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">light_mode</span>
+</div>
+<span class="text-xs font-bold text-primary">Light</span>
+</button>
+<button class="flex flex-col items-center gap-sm p-md rounded-lg border-2 border-transparent hover:border-outline-variant transition-colors" onclick="document.documentElement.classList.add('dark')">
+<div class="w-full h-12 bg-inverse-surface rounded-md border border-outline flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-fixed">dark_mode</span>
+</div>
+<span class="text-xs font-medium text-on-surface-variant">Dark</span>
+</button>
+<button class="flex flex-col items-center gap-sm p-md rounded-lg border-2 border-transparent hover:border-outline-variant transition-colors">
+<div class="w-full h-12 bg-gradient-to-r from-white to-inverse-surface rounded-md border border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface">devices</span>
+</div>
+<span class="text-xs font-medium text-on-surface-variant">System</span>
+</button>
+</div>
+</div>
+</section>
+<!-- 6. Language -->
+<section class="space-y-sm">
+<h3 class="px-sm text-xs font-bold uppercase tracking-widest text-outline">Regional</h3>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 p-lg">
+<div class="relative">
+<label class="block text-xs font-bold text-on-surface-variant mb-xs uppercase">Platform Language</label>
+<select class="w-full bg-surface-bright border border-outline-variant rounded-lg p-md text-on-surface font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+<option>English (US)</option>
+<option>German (Deutsch)</option>
+<option>French (Français)</option>
+<option>Spanish (Español)</option>
+</select>
+<div class="absolute bottom-4 right-4 pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Logout / Destructive Action -->
+<div class="pt-lg pb-xl">
+<button class="w-full py-md border border-error/30 text-error font-bold rounded-xl hover:bg-error/5 transition-colors flex items-center justify-center gap-md">
+<span class="material-symbols-outlined">logout</span>
+                    Sign Out of Industrial Terminal
+                </button>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Bar (Mobile only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface dark:bg-inverse-surface border-t border-outline-variant dark:border-outline shadow-lg lg:hidden">
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-[10px]">Dashboard</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">auto_stories</span>
+<span class="font-label-md text-[10px]">Knowledge</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant p-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-label-md text-[10px]">Analytics</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim font-bold p-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-label-md text-[10px]">Settings</span>
+</button>
+</nav>
+<!-- Micro-interaction Script -->
+<script>
+        // Simple theme switcher toggle simulation
+        document.querySelectorAll('[onclick*="document.documentElement.classList"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[onclick*="document.documentElement.classList"]').forEach(b => {
+                    b.classList.remove('border-primary', 'bg-primary-container/5');
+                    b.classList.add('border-transparent');
+                    b.querySelector('span:last-child').classList.remove('font-bold', 'text-primary');
+                });
+                btn.classList.add('border-primary', 'bg-primary-container/5');
+                btn.classList.remove('border-transparent');
+                btn.querySelector('span:last-child').classList.add('font-bold', 'text-primary');
+            });
+        });
+
+        // Add active state styles to menu items
+        const navItems = document.querySelectorAll('aside nav a');
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                navItems.forEach(i => {
+                    i.classList.remove('bg-primary-container', 'text-on-primary-container', 'font-semibold');
+                    i.classList.add('text-on-surface-variant');
+                });
+                item.classList.add('bg-primary-container', 'text-on-primary-container', 'font-semibold');
+                item.classList.remove('text-on-surface-variant');
+            });
+        });
+    </script>
+</body></html>

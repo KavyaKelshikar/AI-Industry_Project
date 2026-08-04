@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # ── Databases ──
+  mongodb:
+    image: mongo:latest
+    container_name: stitch_ai_mongodb
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=secret
+      - MONGO_INITDB_DATABASE=industrial_intelligence
+    networks:
+      - internal_network
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: echo "db.runCommand('ping').ok" | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: stitch_ai_chromadb
+    restart: always
+    networks:
+      - internal_network
+    volumes:
+      - chromadb_data:/chroma/chroma
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/heartbeat')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── AI Service (FastAPI) ──
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: stitch_ai_ai_service
+    restart: always
+    env_file:
+      - ./ai-service/.env
+    environment:
+      # Override local .env values to use internal docker hostnames
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+      - BACKEND_URL=http://backend:5000
+      - STORAGE_LOCAL_PATH=/app/storage
+    networks:
+      - internal_network
+    volumes:
+      - storage_data:/app/storage
+    depends_on:
+      chromadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend (Node.js) ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stitch_ai_backend
+    restart: always
+    env_file:
+      - ./backend/.env
+    environment:
+      # Override local .env values to use internal docker hostnames
+      - MONGODB_URI=mongodb://admin:secret@mongodb:27017/industrial_intelligence?authSource=admin
+      - AI_SERVICE_URL=http://ai-service:8000
+      - STORAGE_LOCAL_PATH=/app/storage
+    ports:
+      - "5000:5000"
+    networks:
+      - internal_network
+    volumes:
+      - storage_data:/app/storage
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Frontend (React) ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: stitch_ai_frontend
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - internal_network
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  mongodb_data:
+  chromadb_data:
+  storage_data:
+  backend_node_modules:
+  frontend_node_modules:
+
+networks:
+  internal_network:
+    driver: bridge

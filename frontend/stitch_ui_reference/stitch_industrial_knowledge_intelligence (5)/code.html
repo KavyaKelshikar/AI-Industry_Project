@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Upload Knowledge - Industrial Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#2563eb",
+                    "on-error-container": "#93000a",
+                    "primary": "#004ac6",
+                    "surface-container-low": "#f0f3ff",
+                    "inverse-primary": "#b4c5ff",
+                    "surface-bright": "#f9f9ff",
+                    "surface-container": "#e7eeff",
+                    "on-primary-fixed": "#00174b",
+                    "tertiary": "#005a82",
+                    "on-tertiary-fixed": "#001e2f",
+                    "surface": "#f9f9ff",
+                    "on-tertiary-container": "#e4f2ff",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "inverse-on-surface": "#ecf1ff",
+                    "surface-tint": "#0053db",
+                    "error": "#ba1a1a",
+                    "on-surface": "#111c2d",
+                    "background": "#f9f9ff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#dee8ff",
+                    "secondary": "#505f76",
+                    "on-primary-container": "#eeefff",
+                    "on-tertiary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#0074a6",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "tertiary-fixed-dim": "#89ceff",
+                    "on-surface-variant": "#434655",
+                    "surface-container-lowest": "#ffffff",
+                    "tertiary-fixed": "#c9e6ff",
+                    "on-background": "#111c2d",
+                    "surface-variant": "#d8e3fb",
+                    "on-secondary-container": "#54647a",
+                    "on-error": "#ffffff",
+                    "surface-dim": "#cfdaf2",
+                    "outline-variant": "#c3c6d7",
+                    "surface-container-highest": "#d8e3fb",
+                    "outline": "#737686",
+                    "primary-fixed": "#dbe1ff",
+                    "on-secondary-fixed": "#0b1c30",
+                    "inverse-surface": "#263143",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "secondary-fixed": "#d3e4fe",
+                    "on-tertiary-fixed-variant": "#004c6e",
+                    "secondary-container": "#d0e1fb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "container-max": "1440px",
+                    "gutter": "24px",
+                    "xxl": "48px",
+                    "base": "4px",
+                    "sm": "8px",
+                    "xs": "4px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "body-sm": ["Inter"],
+                    "code-sm": ["Geist"],
+                    "display-lg": ["Inter"],
+                    "label-md": ["Geist"],
+                    "body-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "code-sm": ["13px", {"lineHeight": "1.4", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .drag-active {
+            border-color: #2563eb;
+            background-color: #f0f3ff;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="bg-surface sticky top-0 z-50">
+<div class="flex items-center w-full px-lg py-md max-w-container-max mx-auto">
+<button aria-label="Go back" class="mr-md p-sm rounded-full hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[32px]">precision_manufacturing</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Upload Knowledge</h1>
+</div>
+<div class="ml-auto flex items-center gap-md">
+<div class="hidden md:flex items-center gap-sm px-md py-xs bg-surface-container rounded-full">
+<span class="material-symbols-outlined text-primary text-sm">verified_user</span>
+<span class="font-label-md text-label-md text-primary">System Integrity Active</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow w-full max-w-container-max mx-auto px-lg py-xl">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-xl">
+<!-- Left Column: Upload Area & Progress -->
+<div class="lg:col-span-7 space-y-lg">
+<!-- Success Toast (Subtle Notification) -->
+<div class="hidden animate-in fade-in slide-in-from-top duration-500 bg-tertiary-container text-on-tertiary-container p-md rounded-xl flex items-center gap-md border border-tertiary/20" id="success-notification">
+<span class="material-symbols-outlined text-white bg-tertiary rounded-full p-xs text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+<div>
+<p class="font-label-md text-label-md font-bold">Upload Successful</p>
+<p class="font-body-sm text-body-sm opacity-90">Document is being indexed for industrial intelligence retrieval.</p>
+</div>
+</div>
+<!-- Drag & Drop Zone -->
+<div class="bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-xl p-xxl text-center transition-all hover:border-primary-container group relative cursor-pointer overflow-hidden" id="drop-zone">
+<div class="relative z-10 flex flex-col items-center">
+<div class="w-16 h-16 bg-primary-container/10 rounded-full flex items-center justify-center mb-md group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-[40px]">cloud_upload</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Drag and drop files here</h2>
+<p class="font-body-md text-on-surface-variant mb-lg">Maximum file size: 50MB</p>
+<button class="px-xl py-md bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:bg-primary transition-all active:opacity-80">
+                            Browse Files
+                        </button>
+<p class="mt-xl font-body-sm text-body-sm text-outline">Supported Formats: PDF, DOCX, and TXT</p>
+</div>
+<!-- Decorative AI Pattern -->
+<div class="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(#2563eb_1px,transparent_1px)] [background-size:20px_20px]"></div>
+</div>
+<!-- Upload Progress Card -->
+<div class="bg-white p-lg rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_12px_rgba(0,0,0,0.03)] border border-outline-variant">
+<div class="flex justify-between items-center mb-md">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary">description</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Maintenance_SOP_v2.pdf</span>
+</div>
+<span class="font-label-md text-label-md text-primary">75% Uploading...</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full transition-all duration-300" style="width: 75%"></div>
+</div>
+<div class="mt-md flex justify-between items-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">4.2 MB of 5.6 MB</p>
+<button class="text-error font-label-md text-label-md hover:underline">Cancel</button>
+</div>
+</div>
+</div>
+<!-- Right Column: Metadata Form -->
+<div class="lg:col-span-5">
+<div class="bg-white p-lg rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_4px_12px_rgba(0,0,0,0.03)] border border-outline-variant h-full">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-lg flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline">label</span>
+                        Metadata
+                    </h3>
+<form class="space-y-md">
+<!-- Department -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant block">Department</label>
+<select class="w-full h-10 px-md bg-surface border border-outline-variant rounded-lg font-body-md focus:ring-2 focus:ring-primary-container/20 focus:border-primary transition-all outline-none appearance-none cursor-pointer">
+<option>Operations</option>
+<option>Maintenance</option>
+<option>Safety</option>
+<option>HR</option>
+</select>
+</div>
+<!-- Category -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant block">Category</label>
+<select class="w-full h-10 px-md bg-surface border border-outline-variant rounded-lg font-body-md focus:ring-2 focus:ring-primary-container/20 focus:border-primary transition-all outline-none appearance-none cursor-pointer">
+<option>Manual</option>
+<option>Protocol</option>
+<option>Blueprint</option>
+<option>Report</option>
+</select>
+</div>
+<!-- Version -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant block">Version</label>
+<input class="w-full h-10 px-md bg-surface border border-outline-variant rounded-lg font-body-md focus:ring-2 focus:ring-primary-container/20 focus:border-primary transition-all outline-none" placeholder="e.g., v1.0" type="text"/>
+</div>
+<!-- Tags -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant block">Tags</label>
+<div class="flex flex-wrap gap-xs mb-sm">
+<span class="px-sm py-1 bg-secondary-container text-on-secondary-container text-xs rounded-full flex items-center gap-1">
+                                    SOP <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<span class="px-sm py-1 bg-secondary-container text-on-secondary-container text-xs rounded-full flex items-center gap-1">
+                                    Maintenance <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+</div>
+<input class="w-full h-10 px-md bg-surface border border-outline-variant rounded-lg font-body-md focus:ring-2 focus:ring-primary-container/20 focus:border-primary transition-all outline-none" placeholder="Add tags..." type="text"/>
+</div>
+<!-- Access Level -->
+<div class="space-y-xs">
+<label class="font-label-md text-label-md text-on-surface-variant block">Access Level</label>
+<div class="grid grid-cols-1 gap-sm">
+<label class="flex items-center gap-md p-md bg-surface border border-outline-variant rounded-lg cursor-pointer hover:border-primary transition-colors group">
+<input checked="" class="w-4 h-4 text-primary border-outline-variant focus:ring-primary" name="access" type="radio"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">All Employees</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Available across the entire organization</span>
+</div>
+</label>
+<label class="flex items-center gap-md p-md bg-surface border border-outline-variant rounded-lg cursor-pointer hover:border-primary transition-colors group">
+<input class="w-4 h-4 text-primary border-outline-variant focus:ring-primary" name="access" type="radio"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Admin Only</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Restricted to system administrators</span>
+</div>
+</label>
+<label class="flex items-center gap-md p-md bg-surface border border-outline-variant rounded-lg cursor-pointer hover:border-primary transition-colors group">
+<input class="w-4 h-4 text-primary border-outline-variant focus:ring-primary" name="access" type="radio"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Department Only</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Only visible to selected department</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex gap-md pt-lg border-t border-outline-variant mt-xl">
+<button class="flex-1 py-md bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md hover:bg-primary transition-all active:opacity-80" onclick="showSuccess()" type="button">
+                                Upload Document
+                            </button>
+<button class="px-xl py-md bg-transparent border border-outline text-on-surface rounded-lg font-label-md text-label-md hover:bg-surface-container-high transition-all" type="button">
+                                Cancel
+                            </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</main>
+<!-- Knowledge Base Sidebar Peek (Industrial Context) -->
+<div class="fixed bottom-xl right-xl">
+<button class="w-14 h-14 bg-surface-container-high text-primary rounded-full shadow-lg flex items-center justify-center hover:scale-105 transition-transform" title="System Logs">
+<span class="material-symbols-outlined text-[28px]">query_stats</span>
+</button>
+</div>
+<!-- Footer -->
+<footer class="bg-surface border-t border-outline-variant/10">
+<div class="flex flex-col md:flex-row justify-between items-center w-full px-lg py-xl max-w-container-max mx-auto">
+<div class="flex items-center gap-sm mb-md md:mb-0">
+<span class="material-symbols-outlined text-outline text-sm">precision_manufacturing</span>
+<span class="font-label-md text-label-md text-outline">© 2024 Industrial Intelligence Systems</span>
+</div>
+<div class="flex gap-xl">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Support</a>
+</div>
+</div>
+</footer>
+<script>
+        // Simple drag and drop visual interaction
+        const dropZone = document.getElementById('drop-zone');
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.add('drag-active');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-active');
+            }, false);
+        });
+
+        function showSuccess() {
+            const toast = document.getElementById('success-notification');
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
+</body></html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Industrial Intelligence AI Chat</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#ecf1ff",
+                    "on-tertiary-container": "#e4f2ff",
+                    "error-container": "#ffdad6",
+                    "background": "#f9f9ff",
+                    "tertiary": "#005a82",
+                    "on-error-container": "#93000a",
+                    "surface": "#f9f9ff",
+                    "on-surface-variant": "#434655",
+                    "on-primary-container": "#eeefff",
+                    "primary-container": "#2563eb",
+                    "inverse-surface": "#263143",
+                    "tertiary-fixed-dim": "#89ceff",
+                    "surface-dim": "#cfdaf2",
+                    "primary-fixed-dim": "#b4c5ff",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed": "#001e2f",
+                    "surface-container-high": "#dee8ff",
+                    "outline-variant": "#c3c6d7",
+                    "on-secondary-fixed": "#0b1c30",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "secondary-container": "#d0e1fb",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-tertiary-fixed-variant": "#004c6e",
+                    "on-primary": "#ffffff",
+                    "on-secondary-container": "#54647a",
+                    "surface-tint": "#0053db",
+                    "surface-container": "#e7eeff",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#737686",
+                    "secondary-fixed": "#d3e4fe",
+                    "tertiary-fixed": "#c9e6ff",
+                    "on-primary-fixed-variant": "#003ea8",
+                    "surface-container-low": "#f0f3ff",
+                    "inverse-primary": "#b4c5ff",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#d8e3fb",
+                    "on-primary-fixed": "#00174b",
+                    "on-background": "#111c2d",
+                    "primary": "#004ac6",
+                    "on-surface": "#111c2d",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#0074a6",
+                    "surface-variant": "#d8e3fb",
+                    "surface-bright": "#f9f9ff",
+                    "primary-fixed": "#dbe1ff",
+                    "secondary": "#505f76"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xxl": "48px",
+                    "gutter": "24px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "base": "4px",
+                    "md": "16px",
+                    "xl": "32px",
+                    "container-max": "1440px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "label-md": ["Geist"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "code-sm": ["Geist"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-md": ["14px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "code-sm": ["13px", {"lineHeight": "1.4", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            user-select: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .ai-message-gradient {
+            border-left: 4px solid #2563eb;
+            background: linear-gradient(to right, #f8fafc, #ffffff);
+        }
+
+        .floating-input-shadow {
+            box-shadow: 0 -4px 20px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-50 bg-surface border-b border-outline-variant flex justify-between items-center px-gutter h-16">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-primary cursor-pointer">menu</span>
+<h1 class="text-headline-md font-headline-md font-bold text-primary">Industrial Intelligence</h1>
+</div>
+<div class="flex items-center gap-md">
+<div class="hidden md:flex gap-lg">
+<a class="text-primary font-bold" href="#">Chat</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Knowledge Base</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Projects</a>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate industrial executive, sharp focus, clean studio lighting, high-end corporate photography style with a soft blue background gradient." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkg2Z71FZKUR0BHoXQqnB6l48fyB0fNWAn-QgnbEmQA36KdtM0hJvid0bWqWkKOqBN9DHGjNfybxjrBoZAj28FO7Ca-7darhnE5k2WVZdoySLKoK5CO26JE2oyGqN59bNLfS-wtOQHJnjv0KEwOJF6DmX8aEXWz2FZPtSOmCJC4jqFMnYQUk8RPUC647MUlWfyg1viBdXEXDtKUo-QVZFHxy3OBiczewlEicqoUhJKK7oB5JgA8J8"/>
+</div>
+</div>
+</header>
+<main class="flex-grow flex flex-col lg:flex-row max-w-[1440px] mx-auto w-full relative">
+<!-- NavigationDrawer (Desktop Only) -->
+<aside class="hidden lg:flex flex-col gap-sm p-md border-r border-outline-variant w-[280px] bg-surface-container-low shrink-0 h-[calc(100vh-64px)] sticky top-16">
+<div class="px-md py-sm">
+<span class="text-headline-lg font-headline-lg text-primary">AI Knowledge</span>
+</div>
+<nav class="flex flex-col gap-base">
+<a class="flex items-center gap-md bg-secondary-container text-on-secondary-container rounded-lg px-md py-sm active:scale-95 duration-150 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+<span class="font-label-md text-label-md">Chat</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="library_books">library_books</span>
+<span class="font-label-md text-label-md">Knowledge Base</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="terminal">terminal</span>
+<span class="font-label-md text-label-md">Projects</span>
+</a>
+<a class="flex items-center gap-md text-on-surface-variant px-md py-sm hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto p-md bg-surface-container-highest rounded-xl border border-outline-variant">
+<p class="text-body-sm font-medium mb-sm">Storage Capacity</p>
+<div class="w-full bg-outline-variant h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary w-[65%] h-full"></div>
+</div>
+<p class="text-[10px] mt-xs text-on-surface-variant">6.5GB of 10GB used</p>
+</div>
+</aside>
+<!-- Chat Canvas -->
+<section class="flex-grow flex flex-col min-h-0 bg-white pb-40 md:pb-48">
+<!-- Message Feed -->
+<div class="flex-grow overflow-y-auto px-gutter py-xl flex flex-col gap-xl max-w-[800px] mx-auto w-full">
+<!-- User Message -->
+<div class="flex flex-col items-end">
+<div class="bg-surface-container-highest text-on-background px-md py-sm rounded-2xl rounded-tr-none max-w-[85%] border border-outline-variant shadow-sm">
+<p class="font-body-md text-body-md">What are the safety requirements for operating Heavy Machinery in Plant A?</p>
+</div>
+<span class="text-[10px] mt-1 text-on-surface-variant px-1">10:24 AM</span>
+</div>
+<!-- AI Response Card -->
+<div class="flex flex-col items-start w-full">
+<div class="w-full ai-message-gradient p-lg rounded-2xl border border-outline-variant shadow-sm flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<div class="flex gap-sm">
+<span class="bg-primary-container text-on-primary-container px-sm py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">AI Insight</span>
+<span class="bg-tertiary-fixed text-on-tertiary-fixed px-sm py-1 rounded-full text-[10px] font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                                    Confidence Score: 98%
+                                </span>
+</div>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">more_vert</span>
+</div>
+<div class="text-on-surface font-body-md text-body-md leading-relaxed">
+                            Based on the <strong>Safety Protocols 2024 (Section 4.2)</strong>, operating heavy machinery in Plant A requires:
+                            <ul class="list-disc ml-6 mt-sm space-y-2">
+<li><strong>PPE Compliance:</strong> Mandatory Grade-3 hard hat, steel-toed boots, and high-visibility vest.</li>
+<li><strong>Pre-Check:</strong> Completion of the 15-point electronic safety checklist on the operator terminal.</li>
+<li><strong>Exclusion Zone:</strong> Maintaining a 5-meter clearance from unauthorized personnel during activation.</li>
+</ul>
+</div>
+<!-- Source Citation -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-md flex items-center gap-md group cursor-pointer hover:bg-surface-container-high transition-colors">
+<div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-primary border border-outline-variant">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="flex-grow">
+<p class="text-body-sm font-semibold">Source Reference</p>
+<p class="text-[12px] text-on-surface-variant">Maintenance_Manual_v2_PlantA.pdf • Page 142</p>
+</div>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-transform group-hover:translate-x-1">arrow_forward</span>
+</div>
+<!-- Action Row -->
+<div class="flex items-center justify-between pt-sm border-t border-outline-variant">
+<div class="flex gap-md">
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-body-sm">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+<span class="hidden sm:inline">Copy</span>
+</button>
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-body-sm">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span class="hidden sm:inline">PDF</span>
+</button>
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors text-body-sm">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+<span class="hidden sm:inline">Regenerate</span>
+</button>
+</div>
+<div class="flex gap-sm border-l border-outline-variant pl-md">
+<button class="text-on-surface-variant hover:text-primary transition-all active:scale-90">
+<span class="material-symbols-outlined text-[20px]">thumb_up</span>
+</button>
+<button class="text-on-surface-variant hover:text-error transition-all active:scale-90">
+<span class="material-symbols-outlined text-[20px]">thumb_down</span>
+</button>
+</div>
+</div>
+</div>
+<span class="text-[10px] mt-1 text-on-surface-variant px-1">AI response • 10:25 AM</span>
+</div>
+</div>
+<!-- Interaction Layer (Sticky Bottom) -->
+<div class="fixed bottom-16 lg:bottom-0 left-0 lg:left-[280px] right-0 bg-gradient-to-t from-white via-white to-transparent pt-8 pb-gutter px-md md:px-gutter z-40">
+<div class="max-w-[800px] mx-auto w-full">
+<!-- Suggested Questions -->
+<div class="flex gap-sm overflow-x-auto hide-scrollbar mb-md pb-1">
+<button class="shrink-0 bg-surface-container-low hover:bg-primary-container hover:text-on-primary-container border border-outline-variant px-md py-2 rounded-full text-body-sm transition-all whitespace-nowrap active:scale-95 shadow-sm">What is the leave policy?</button>
+<button class="shrink-0 bg-surface-container-low hover:bg-primary-container hover:text-on-primary-container border border-outline-variant px-md py-2 rounded-full text-body-sm transition-all whitespace-nowrap active:scale-95 shadow-sm">Explain machine maintenance schedule.</button>
+<button class="shrink-0 bg-surface-container-low hover:bg-primary-container hover:text-on-primary-container border border-outline-variant px-md py-2 rounded-full text-body-sm transition-all whitespace-nowrap active:scale-95 shadow-sm">Safety guidelines for Plant A.</button>
+<button class="shrink-0 bg-surface-container-low hover:bg-primary-container hover:text-on-primary-container border border-outline-variant px-md py-2 rounded-full text-body-sm transition-all whitespace-nowrap active:scale-95 shadow-sm">SOP for quality inspection.</button>
+</div>
+<!-- Input Box -->
+<div class="relative group">
+<div class="bg-white border-2 border-outline-variant group-focus-within:border-primary-container rounded-2xl p-base transition-all duration-300 floating-input-shadow">
+<div class="flex items-end gap-sm px-sm py-sm">
+<button class="p-2 text-outline hover:text-primary transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="attach_file">attach_file</span>
+</button>
+<textarea class="flex-grow bg-transparent border-none focus:ring-0 resize-none font-body-md text-body-md py-2 max-h-32" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Ask anything about company documents..." rows="1"></textarea>
+<button class="w-10 h-10 bg-primary hover:bg-primary-container text-white rounded-xl flex items-center justify-center transition-all active:scale-90 shadow-md">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+</button>
+</div>
+</div>
+<div class="mt-2 flex justify-center lg:justify-start">
+<p class="text-[10px] text-on-surface-variant flex items-center gap-1 opacity-60">
+<span class="material-symbols-outlined text-[12px]">info</span>
+                                Industrial Intelligence AI can make mistakes. Verify critical safety data.
+                            </p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Sources Panel (Desktop Side-View / Mobile Sheet hidden logic) -->
+<aside class="hidden xl:flex flex-col w-[320px] shrink-0 border-l border-outline-variant bg-surface p-lg h-[calc(100vh-64px)] sticky top-16 overflow-y-auto">
+<h3 class="text-headline-sm font-semibold mb-lg">Related Documents</h3>
+<div class="flex flex-col gap-md">
+<!-- Doc Card 1 -->
+<div class="bg-white border border-outline-variant rounded-xl p-md hover:shadow-md transition-all cursor-pointer">
+<div class="flex items-start justify-between mb-sm">
+<div class="p-2 bg-primary-container/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<span class="text-[10px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">PDF</span>
+</div>
+<p class="font-semibold text-body-sm line-clamp-1">Safety_Protocols_2024.pdf</p>
+<p class="text-[12px] text-on-surface-variant mt-1">Last updated: Jan 12, 2024</p>
+</div>
+<!-- Doc Card 2 -->
+<div class="bg-white border border-outline-variant rounded-xl p-md hover:shadow-md transition-all cursor-pointer">
+<div class="flex items-start justify-between mb-sm">
+<div class="p-2 bg-primary-container/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">description</span>
+</div>
+<span class="text-[10px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">DOCX</span>
+</div>
+<p class="font-semibold text-body-sm line-clamp-1">Plant_A_Maintenance_Log.docx</p>
+<p class="text-[12px] text-on-surface-variant mt-1">Last updated: Feb 05, 2024</p>
+</div>
+<button class="mt-md w-full border border-dashed border-outline text-on-surface-variant py-sm rounded-xl text-body-sm hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Upload Documentation
+                </button>
+</div>
+<div class="mt-xl">
+<h4 class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest mb-md">Quick Access</h4>
+<div class="space-y-sm">
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-outline">history</span>
+<span class="text-body-sm">Maintenance History</span>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-outline">shield</span>
+<span class="text-body-sm">ISO Compliance Docs</span>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="lg:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 pb-safe bg-surface border-t border-outline-variant shadow-lg z-50">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:scale-90 duration-200 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="forum">forum</span>
+<span class="font-label-md text-label-md">Chat</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Sources</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-container-highest transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-label-md text-label-md">History</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions and UI logic
+        document.addEventListener('DOMContentLoaded', () => {
+            // Auto-resize textarea logic is inline but can be enhanced
+            const textarea = document.querySelector('textarea');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Ripple-like effect on chips
+            const chips = document.querySelectorAll('button.shrink-0');
+            chips.forEach(chip => {
+                chip.addEventListener('click', () => {
+                    const text = chip.innerText;
+                    textarea.value = text;
+                    textarea.dispatchEvent(new Event('input'));
+                    textarea.focus();
+                });
+            });
+        });
+    </script>
+</body></html>
