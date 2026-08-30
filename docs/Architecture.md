@@ -75,9 +75,17 @@ enterprise-knowledge-platform/
 ## Multi-Tenant Architecture
 
 The platform uses a **Shared Database, Shared Collection** strategy with strict `companyId` isolation.
-- **MongoDB**: All tenants share the database, but every query mandates a `companyId` filter applied automatically by the `BaseRepository`.
+- **MongoDB**: All tenant-owned collections carry `companyId`; this includes document versions, refresh tokens, chat records, audit records, invitations, users, departments, roles, and documents. Global permissions and default roles are the documented exceptions.
 - **ChromaDB**: Each company gets an isolated collection (`company_{companyId}`).
 - **Storage**: Files are segregated into `storage/{companyId}/` directories.
+
+### Repository Scope Boundary
+
+The database foundation exposes a scope-aware repository interface: callers can supply a trusted filter such as `{ companyId }`, and that scope overrides an untrusted filter value. Module 6 will obtain the scope only from verified identity and make it mandatory for every tenant-owned operation. This boundary keeps schema work separate from the later authentication and authorization implementation.
+
+### Permission Naming
+
+Permissions use a single `<resource>:<action>` convention, with lowercase kebab-case tokens where needed: `companies:read`, `documents:upload`, `chat:read-own`, and `audit-logs:read`. The global `permissions` collection stores this identifier in `code`.
 
 ## Storage Architecture
 

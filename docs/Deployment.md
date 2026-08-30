@@ -12,15 +12,18 @@ The system relies on 5 core containers defined in `docker-compose.yml`:
 5. **chromadb**: Vector database
 
 ## Local Development
-
-For local development, we use `docker-compose.dev.yml`, which mounts local volumes for hot-reloading.
-
-1. Copy `.env.example` to `.env` and fill in the secrets (JWT keys, Gemini API key).
-2. Run `docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build`
-3. The services will be available at:
-   - Frontend: `http://localhost:5173`
-   - Backend API: `http://localhost:5000`
-   - AI Service API: `http://localhost:8000`
+For unified local development, run:
+```bash
+npm run dev
+# or
+powershell -ExecutionPolicy Bypass -File .\start-dev.ps1
+```
+The services are available at:
+- **Frontend UI**: `http://localhost:5173`
+- **Backend API**: `http://localhost:5000` (Aggregate Health: `http://localhost:5000/api/v1/health`)
+- **Python AI Service**: `http://localhost:8002` (Health: `http://localhost:8002/health`)
+- **ChromaDB Vector Store**: `http://localhost:8000`
+- **MongoDB**: `localhost:27017`
 
 ## Production Deployment Notes
 

@@ -151,7 +151,7 @@ This document provides a precise mapping of every Stitch AI frontend page to the
 ↓
 
 **Required Middleware**
-- `authenticate`, `authorize('admin:read')`, `tenantIsolation`
+- `authenticate`, `authorize('analytics:read')`, `tenantIsolation`
 
 ↓
 
@@ -161,7 +161,7 @@ This document provides a precise mapping of every Stitch AI frontend page to the
 ↓
 
 **Authorization Rules**
-- Requires `admin:read` permission in user's assigned role.
+- Requires `analytics:read` permission in the user's assigned role.
 
 ↓
 

@@ -1,0 +1,14 @@
+{
+  "name": "stitch-ai-platform",
+  "version": "1.0.0",
+  "description": "Multi-Tenant Industrial Knowledge & Intelligence Platform",
+  "scripts": {
+    "dev": "powershell -ExecutionPolicy Bypass -File ./start-dev.ps1",
+    "test:backend": "npm test --prefix backend",
+    "test:ai": "powershell -Command \"Set-Location 'ai-service'; & 'venv/Scripts/python.exe' -m pytest tests/ -v\"",
+    "seed:demo": "npm run seed:demo --prefix backend"
+  },
+  "keywords": ["multi-tenancy", "rag", "fastapi", "express", "react", "chromadb", "mongodb"],
+  "author": "",
+  "license": "ISC"
+}

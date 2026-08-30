@@ -4,8 +4,17 @@
  * so no file ever reads process.env directly.
  */
 
+const env = process.env.NODE_ENV || 'development';
+let envConfig = {};
+
+try {
+  envConfig = require(`./${env}`);
+} catch (error) {
+  console.warn(`[WARNING] No specific configuration found for environment: ${env}`);
+}
+
 const config = {
-  env: process.env.NODE_ENV || 'development',
+  env,
   port: parseInt(process.env.PORT, 10) || 5000,
 
   // Database
@@ -19,21 +28,31 @@ const config = {
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
 
+  // Auth Security & Rate Limiting
+  auth: {
+    bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 10,
+    rateLimit: {
+      windowMs: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000,
+      max: parseInt(process.env.AUTH_RATE_LIMIT_MAX, 10) || 20,
+    },
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    },
+  },
+
   // AI Service
   aiService: {
     url: process.env.AI_SERVICE_URL || 'http://localhost:8000',
   },
 
-  // Storage
-  storage: {
-    provider: process.env.STORAGE_PROVIDER || 'local',
-    localPath: process.env.STORAGE_LOCAL_PATH || '../storage/uploads',
+  // Vector Database (ChromaDB)
+  chromadb: {
+    host: process.env.CHROMADB_HOST || 'localhost',
+    port: parseInt(process.env.CHROMADB_PORT, 10) || 8000,
   },
 
-  // CORS
-  cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  },
+  ...envConfig,
 };
 
 module.exports = config;

@@ -12,6 +12,8 @@ services:
       - MONGO_INITDB_DATABASE=industrial_intelligence
     networks:
       - internal_network
+    ports:
+      - "27017:27017"
     volumes:
       - mongodb_data:/data/db
     healthcheck:
@@ -26,13 +28,10 @@ services:
     restart: always
     networks:
       - internal_network
+    ports:
+      - "8000:8000"
     volumes:
       - chromadb_data:/chroma/chroma
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/heartbeat')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # ── AI Service (FastAPI) ──
   ai-service:
@@ -55,7 +54,7 @@ services:
       - storage_data:/app/storage
     depends_on:
       chromadb:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -88,7 +87,7 @@ services:
       ai-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/api/v1/health"]
       interval: 10s
       timeout: 5s
       retries: 5
