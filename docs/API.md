@@ -160,7 +160,7 @@ The Document Processing & AI Vector Pipeline operationalizes documents discovere
 - **Idempotency & Vector Cleanup**: Re-ingesting a modified document deletes/replaces outdated vector chunks in ChromaDB, preventing duplicate embeddings.
 - **Sanitized Telemetry**: Chunk counts, vector counts, embedding models, and timestamps are returned, while raw filesystem paths and internal error traces are stripped and redacted.
 
-## 6. Chat Endpoints (`/api/v1/chat`)
+## 6. Chat & Conversational Assistant Endpoints (`/api/v1/chat`)
 
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
@@ -168,6 +168,64 @@ The Document Processing & AI Vector Pipeline operationalizes documents discovere
 | GET | `/sessions` | List the caller's chat sessions | Yes (`chat:read-own`) |
 | GET | `/sessions/:id` | Get the caller's session messages | Yes (`chat:read-own`) |
 | DELETE | `/sessions/:id` | Delete the caller's chat session | Yes (`chat:read-own`) |
+
+### 6.1 Enterprise RAG Endpoints (`/api/v1/rag`)
+
+Module 11 Phase 2 provides direct tenant-isolated RAG search and multi-turn conversational chat endpoints backed by the AI Service and ChromaDB vector store.
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/api/v1/rag/query` | Single-turn grounded RAG search and answer synthesis | Yes (JWT, Company Scoped) |
+| POST | `/api/v1/rag/chat` | Multi-turn conversational RAG chat with conversation history | Yes (JWT, Company Scoped) |
+
+#### `POST /api/v1/rag/query` Request Body
+```json
+{
+  "query": "Where is Assembly Point Delta located?",
+  "top_k": 3,
+  "score_threshold": 0.1,
+  "departmentId": "dept-uuid",
+  "category": "SOP"
+}
+```
+
+#### `POST /api/v1/rag/chat` Request Body
+```json
+{
+  "query": "What valve needs to be closed?",
+  "chat_history": [
+    { "role": "user", "content": "I need emergency procedures." },
+    { "role": "assistant", "content": "Our plant has emergency protocols..." }
+  ],
+  "top_k": 3
+}
+```
+
+#### Response Body
+```json
+{
+  "success": true,
+  "data": {
+    "query": "Where is Assembly Point Delta located?",
+    "companyId": "6a9dc...",
+    "answer": "Based on company documentation...",
+    "sources": [
+      {
+        "documentId": "6a9dc...",
+        "source": "acme-plant-emergency-sop.txt",
+        "snippet": "...",
+        "similarity": 0.1369,
+        "page": 1,
+        "classification": "internal"
+      }
+    ],
+    "grounded": true,
+    "retrievedCount": 3,
+    "durationMs": 142.5,
+    "llmProvider": "google-gemini"
+  }
+}
+```
 
 ## 7. Role, Audit, and Analytics Endpoints
 

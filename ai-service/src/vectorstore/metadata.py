@@ -38,6 +38,8 @@ class DocumentChunkMetadata(BaseModel):
         """
         Convert to a ChromaDB-compatible flat metadata dictionary.
         ChromaDB only accepts non-null primitive scalar types: str, int, float, bool.
+        Ensures 'classification' always has a queryable value (defaults to 'internal')
+        so that $in filters on classification never miss chunks with unset values.
         """
         raw_dict = self.model_dump(exclude_none=True)
         chroma_dict: Dict[str, Union[str, int, float, bool]] = {}
@@ -47,6 +49,10 @@ class DocumentChunkMetadata(BaseModel):
                 chroma_dict[key] = value
             else:
                 chroma_dict[key] = str(value)
+
+        # Guarantee classification is always present for filter matching
+        if "classification" not in chroma_dict:
+            chroma_dict["classification"] = "internal"
 
         return chroma_dict
 

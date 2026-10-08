@@ -47,6 +47,7 @@ class TestDocumentChunkMetadata:
             "documentId": "doc-999",
             "companyId": "company-abc",
             "chunkId": "c-1",
+            "classification": "internal",
         }
         # None values are excluded so ChromaDB does not reject them
         assert "departmentId" not in chroma_dict

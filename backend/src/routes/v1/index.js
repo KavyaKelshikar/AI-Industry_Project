@@ -4,6 +4,7 @@ const authRoutes = require('./authRoutes');
 const employeeRoutes = require('./employeeRoutes');
 const knowledgeSourceRoutes = require('./knowledgeSourceRoutes');
 const documentRoutes = require('./documentRoutes');
+const ragRoutes = require('./ragRoutes');
 
 const router = express.Router();
 
@@ -13,5 +14,6 @@ router.use('/auth', authRoutes);
 router.use('/employees', employeeRoutes);
 router.use('/knowledge-sources', knowledgeSourceRoutes);
 router.use('/documents', documentRoutes);
+router.use('/rag', ragRoutes);
 
 module.exports = router;

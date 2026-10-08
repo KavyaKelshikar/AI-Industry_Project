@@ -83,8 +83,31 @@ The `retrieval` package (`src/retrieval/`) provides tenant-isolated semantic sea
 - **Factory**: `ai-service/src/embeddings/factory.py`
   - `get_embedding_service(provider, model_name)`: Environment-driven provider resolution via `EMBEDDING_PROVIDER` and `EMBEDDING_MODEL` settings.
 
+## Module 11 Enterprise RAG & Conversational Assistant Architecture
+
+### 1. Vector Retrieval Foundation (`ai-service/src/retrieval/`)
+- **Tenant-Isolated Retrieval (`retriever.py`)**: `VectorRetriever` queries the company's ChromaDB collection (`company_{clean_company_id}`). Enforces `build_tenant_filter()` including role-based classification (`public`, `internal`, `confidential`) and optional department filtering.
+- **Cosine Distance Normalization**: Translates raw ChromaDB distance to normalized similarity score $1.0 - \text{dist}$, clamped to $[0.0, 1.0]$.
+- **Configurable Similarity Threshold**: Filters out irrelevant chunks using per-query `score_threshold` or global `DEFAULT_SIMILARITY_THRESHOLD`.
+
+### 2. Prompt Engineering & Injection Resistance (`ai-service/src/prompts/`)
+- **`rag_prompts.py`**: Constructs structured grounding prompts isolating untrusted document text in fenced blocks (`=== CONTEXT FROM VERIFIED DOCUMENTS ===`).
+- **Prompt Injection Resistance**: All context text is sanitized; instructions inside document context are treated as inert data rather than system directives.
+- **Strict Grounding Directive**: Instructs the LLM to answer strictly from provided facts and return standard insufficient documentation disclaimers when facts are missing.
+
+### 3. LLM Generation & Fallback Layer (`ai-service/src/llm/`)
+- **`GeminiLLMClient`**: Google Gemini API client (`gemini-1.5-flash`) operating at low temperature (`0.1`) for factual precision.
+- **`DeterministicGroundingLLMClient`**: Deterministic offline grounding fallback used when API keys are absent or during isolated test verification.
+- **Client Factory (`get_llm_client()`)**: Resolves active provider based on environment credentials.
+
+### 4. RAG Pipeline Orchestrator (`ai-service/src/retrieval/rag_pipeline.py`)
+- **`RAGPipeline.execute_rag()`**: Coordinates retrieval, citation construction, prompt assembly, and answer synthesis.
+- **Hallucination Prevention**: Automatically detects insufficient information and marks response with `grounded: false`.
+- **Source Provenance Citations**: Returns document ID, original filename, page number, classification, similarity score, and excerpt snippets.
+
 ## Future AI Roadmap
 The architecture is modularized to support future additions:
 - **OCR**: Adding `TesseractExtractor` to the `ExtractorFactory`.
 - **Multiple LLMs**: The `LLMService` is abstracted to easily swap Gemini for OpenAI, Groq, or local Ollama models.
 - **Knowledge Graphs**: Future integration points in the `retrievers/` module.
+

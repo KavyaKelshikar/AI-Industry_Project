@@ -145,7 +145,7 @@ class DocumentProcessingService {
         document_id: docIdStr,
         company_id: companyIdStr,
         department_id: doc.departmentIds && doc.departmentIds.length > 0 ? doc.departmentIds[0].toString() : null,
-        classification: doc.classification || null,
+        classification: doc.classification || 'internal',
         category: doc.category || null,
         source: doc.originalFilename,
       };

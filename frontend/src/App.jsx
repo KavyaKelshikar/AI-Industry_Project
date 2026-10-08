@@ -74,6 +74,15 @@ export default function App() {
   const [processingDocIds, setProcessingDocIds] = useState({});
   const [batchProcessing, setBatchProcessing] = useState(false);
 
+  // ── Module 11: RAG & Conversational Assistant State ──
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatError, setChatError] = useState(null);
+  const [chatTopK, setChatTopK] = useState(5);
+  const [lastFailedQuery, setLastFailedQuery] = useState(null);
+
+
   // ── 1. Fetch Platform Health ──
   const fetchHealth = useCallback(async () => {
     setHealthLoading(true);
@@ -222,6 +231,15 @@ export default function App() {
     }
   }, [userSession, currentSection, fetchDocumentsList]);
 
+  // Cleanly reset conversation state when user session changes or on logout
+  const currentUserId = userSession?.id || userSession?._id;
+  useEffect(() => {
+    setChatMessages([]);
+    setChatError(null);
+    setLastFailedQuery(null);
+  }, [currentUserId]);
+
+
   // ── Auth Handlers ──
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -309,6 +327,8 @@ export default function App() {
       setLatestPayload({ endpoint: 'POST /api/v1/auth/logout', timestamp: new Date().toLocaleTimeString(), response: res });
       setUserSession(null);
       setEmployees([]);
+      setChatMessages([]);
+      setChatError(null);
       setAuthFeedback({ type: 'info', message: 'Session logged out and HttpOnly cookies cleared.' });
     } finally {
       setAuthLoading(false);
@@ -541,6 +561,125 @@ export default function App() {
     }
   };
 
+  // ── Module 11: RAG Chat Handlers & Citation Helpers ──
+  const getSafeCitationFilename = (source) => {
+    if (!source || typeof source !== 'string') return 'Document';
+    const basename = source.split(/[/\\]/).pop();
+    return basename || 'Document';
+  };
+
+  const getClassificationBadgeClass = (classification) => {
+    const clean = String(classification || 'internal').toLowerCase();
+    if (clean === 'confidential') return 'rag-classification-confidential';
+    if (clean === 'public') return 'rag-classification-public';
+    return 'rag-classification-internal';
+  };
+
+  const handleSendChatMessage = async (e, textOverride = null) => {
+    if (e) e.preventDefault();
+    const messageText = (textOverride || chatInput).trim();
+    if (!messageText || chatLoading) return;
+
+    if (!userSession) {
+      alert('Please sign in first to use the AI Knowledge Assistant.');
+      return;
+    }
+
+    const userMessageId = `user-${Date.now()}`;
+    const userMessage = {
+      id: userMessageId,
+      role: 'user',
+      content: messageText,
+      timestamp: new Date().toLocaleTimeString(),
+    };
+
+    // Optimistically append user message
+    const updatedMessages = [...chatMessages, userMessage];
+    setChatMessages(updatedMessages);
+    setChatInput('');
+    setChatLoading(true);
+    setChatError(null);
+
+    try {
+      // Send the last 10 turns as history (excluding the current latest user message and filtering out previous error bubbles)
+      const historyPayload = updatedMessages
+        .slice(0, -1)
+        .filter((m) => !m.isError)
+        .slice(-10)
+        .map((m) => ({
+          role: m.role === 'assistant' ? 'assistant' : 'user',
+          content: m.content.slice(0, 2000),
+        }));
+
+      const res = await api.chatRAG({
+        query: messageText,
+        chat_history: historyPayload,
+        top_k: Number(chatTopK) || 5,
+      });
+
+      setLatestPayload({
+        endpoint: 'POST /api/v1/rag/chat',
+        timestamp: new Date().toLocaleTimeString(),
+        response: res,
+      });
+
+      if (res.ok && res.data) {
+        const assistantMessage = {
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: res.data.answer || 'No answer generated.',
+          sources: res.data.sources || [],
+          grounded: Boolean(res.data.grounded),
+          retrievedCount: res.data.retrievedCount || 0,
+          durationMs: res.data.durationMs || 0,
+          llmProvider: res.data.llmProvider || 'ai-service',
+          timestamp: new Date().toLocaleTimeString(),
+        };
+        setChatMessages((prev) => [...prev, assistantMessage]);
+        setLastFailedQuery(null);
+      } else {
+        const errMsg = res.error?.message || res.message || 'RAG Assistant request failed';
+        setChatError(errMsg);
+        setLastFailedQuery(messageText);
+        const errorAssistantMsg = {
+          id: `error-${Date.now()}`,
+          role: 'assistant',
+          content: `⚠️ Could not complete request: ${errMsg}`,
+          failedQuery: messageText,
+          sources: [],
+          grounded: false,
+          isError: true,
+          timestamp: new Date().toLocaleTimeString(),
+        };
+        setChatMessages((prev) => [...prev, errorAssistantMsg]);
+      }
+    } catch (err) {
+      const errMsg = err.message || 'An unexpected error occurred during request';
+      setChatError(errMsg);
+      setLastFailedQuery(messageText);
+      const errorAssistantMsg = {
+        id: `error-${Date.now()}`,
+        role: 'assistant',
+        content: `⚠️ Could not complete request: ${errMsg}`,
+        failedQuery: messageText,
+        sources: [],
+        grounded: false,
+        isError: true,
+        timestamp: new Date().toLocaleTimeString(),
+      };
+      setChatMessages((prev) => [...prev, errorAssistantMsg]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const handleClearChat = () => {
+    setChatMessages([]);
+    setChatError(null);
+    setLastFailedQuery(null);
+  };
+
+
   const getDocIndexingStatusClass = (status) => {
     if (status === 'indexed') return 'doc-status-indexed';
     if (status === 'processing') return 'doc-status-processing';
@@ -616,6 +755,12 @@ export default function App() {
           }}
         >
           📄 Document Ingestion (Module 10)
+        </button>
+        <button
+          className={`nav-tab-btn ${currentSection === 'rag-assistant' ? 'active' : ''}`}
+          onClick={() => setCurrentSection('rag-assistant')}
+        >
+          🤖 AI Knowledge Assistant (Module 11)
         </button>
       </nav>
 
@@ -1541,6 +1686,240 @@ export default function App() {
         </section>
       )}
 
+      {/* ── SECTION 5: AI Knowledge Assistant (Module 11) ── */}
+      {currentSection === 'rag-assistant' && (
+        <section className="rag-assistant-section">
+          {/* Header Bar */}
+          <div className="rag-header-bar">
+            <div className="rag-title-group">
+              <div className="rag-icon">🤖</div>
+              <div>
+                <h2 className="panel-title" style={{ margin: 0 }}>Enterprise AI Knowledge Assistant</h2>
+                <p className="brand-subtitle">Grounded semantic retrieval & Q&A powered by ChromaDB vectors</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)' }}>
+                <span>Top Chunks:</span>
+                <select
+                  className="table-filter-select"
+                  style={{ width: '70px', padding: '4px 8px' }}
+                  value={chatTopK}
+                  onChange={(e) => setChatTopK(Number(e.target.value))}
+                >
+                  <option value={3}>3</option>
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                </select>
+              </div>
+
+              <button
+                className="btn-secondary btn-sm"
+                onClick={handleClearChat}
+                disabled={chatMessages.length === 0 || chatLoading}
+                title="Start a new conversation"
+              >
+                🔄 Clear / New Chat
+              </button>
+            </div>
+          </div>
+
+          {userSession && chatError && (
+            <div className="feedback-alert feedback-error" style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>⚠️ {chatError}</span>
+              {lastFailedQuery && (
+                <button
+                  type="button"
+                  className="btn-secondary btn-sm"
+                  onClick={() => handleSendChatMessage(null, lastFailedQuery)}
+                  disabled={chatLoading}
+                >
+                  🔁 Retry Query
+                </button>
+              )}
+            </div>
+          )}
+
+          {!userSession ? (
+            <div className="rag-unauth-card">
+              <div className="rag-empty-icon">🔒</div>
+              <h3 style={{ color: '#f8fafc', marginBottom: '8px' }}>Authentication Required</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '13px', maxWidth: '500px', marginBottom: '16px', lineHeight: 1.5 }}>
+                Please sign in with a registered company account or initialize an admin profile on the System Matrix tab to interact with the AI Knowledge Assistant.
+              </p>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => setCurrentSection('overview')}
+              >
+                Go to Sign In / Auth Studio ➔
+              </button>
+            </div>
+          ) : (
+            <div className="rag-chat-container">
+              {/* Message Stream */}
+              <div className="rag-messages-stream">
+                {chatMessages.length === 0 ? (
+                  <div className="rag-empty-state">
+                    <div className="rag-empty-icon">🧠</div>
+                    <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#f8fafc', marginBottom: '8px' }}>
+                      How can I help you today?
+                    </h3>
+                    <p style={{ maxWidth: '500px', fontSize: '13px', lineHeight: 1.5 }}>
+                      Ask questions about your company's indexed documents, standard operating procedures, policies, or technical guides.
+                    </p>
+                    <div className="rag-starter-chips">
+                      <button
+                        type="button"
+                        className="rag-chip"
+                        onClick={() => handleSendChatMessage(null, 'What are our plant safety and emergency guidelines?')}
+                      >
+                        💡 Plant safety guidelines
+                      </button>
+                      <button
+                        type="button"
+                        className="rag-chip"
+                        onClick={() => handleSendChatMessage(null, 'What is the equipment maintenance inspection frequency?')}
+                      >
+                        💡 Maintenance inspection frequency
+                      </button>
+                      <button
+                        type="button"
+                        className="rag-chip"
+                        onClick={() => handleSendChatMessage(null, 'What is the company remote work policy?')}
+                      >
+                        💡 Remote work policy
+                      </button>
+                      <button
+                        type="button"
+                        className="rag-chip"
+                        onClick={() => handleSendChatMessage(null, 'What are the API rate limits and protocols?')}
+                      >
+                        💡 API rate limits & protocols
+                      </button>
+                      <button
+                        type="button"
+                        className="rag-chip"
+                        onClick={() => handleSendChatMessage(null, 'What are the data classification security rules?')}
+                      >
+                        💡 Data classification rules
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  chatMessages.map((msg) => (
+                    <div key={msg.id} className={`rag-message-row ${msg.role}`}>
+                      <div className={`rag-avatar ${msg.role}`}>
+                        {msg.role === 'user' ? '👤' : (msg.isError ? '⚠️' : '⚡')}
+                      </div>
+                      <div className={`rag-message-bubble ${msg.role} ${msg.isError ? 'error' : ''}`}>
+                        {msg.role === 'assistant' && !msg.isError && (
+                          <div className={`rag-grounding-pill ${msg.grounded ? 'grounded-true' : 'grounded-false'}`}>
+                            {msg.grounded ? '✓ Verified Company Documentation' : '⚠️ Insufficient Documentation'}
+                          </div>
+                        )}
+                        <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+
+                        {/* Error state with retry action */}
+                        {msg.isError && msg.failedQuery && (
+                          <button
+                            type="button"
+                            className="rag-retry-btn"
+                            onClick={() => handleSendChatMessage(null, msg.failedQuery)}
+                            disabled={chatLoading}
+                          >
+                            🔁 Retry Query
+                          </button>
+                        )}
+
+                        {/* Citations block */}
+                        {msg.sources && msg.sources.length > 0 && (
+                          <div className="rag-citations-container">
+                            <div className="rag-citations-header">
+                              📚 Sources & Provenance ({msg.sources.length}):
+                            </div>
+                            <div className="rag-citations-grid">
+                              {msg.sources.map((src, sIdx) => (
+                                <div key={sIdx} className="rag-citation-card">
+                                  <div className="rag-citation-top">
+                                    <span className="rag-citation-name">
+                                      📄 {getSafeCitationFilename(src.source)}
+                                    </span>
+                                    <div className="rag-citation-meta">
+                                      {src.page ? (
+                                        <span className="rag-citation-page">Page {src.page}</span>
+                                      ) : null}
+                                      {src.classification ? (
+                                        <span className={`rag-classification-badge ${getClassificationBadgeClass(src.classification)}`}>
+                                          {src.classification.toUpperCase()}
+                                        </span>
+                                      ) : null}
+                                      {typeof src.similarity === 'number' && (
+                                        <span className="rag-citation-score">
+                                          {Math.round(src.similarity * 100)}% Match
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  {src.snippet && (
+                                    <div className="rag-citation-snippet">
+                                      "{src.snippet}"
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="rag-message-time" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span>{msg.timestamp}</span>
+                          {msg.durationMs ? <span>⏱️ {msg.durationMs}ms</span> : null}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+
+
+                {chatLoading && (
+                  <div className="rag-message-row assistant">
+                    <div className="rag-avatar assistant">⚡</div>
+                    <div className="rag-message-bubble assistant">
+                      <div className="rag-typing-indicator">
+                        <span className="rag-dot-pulse"></span>
+                        <span>Searching tenant vector collection & generating grounded response...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Chat Input Bar */}
+              <form className="rag-input-bar" onSubmit={handleSendChatMessage}>
+                <input
+                  type="text"
+                  className="rag-input-field"
+                  placeholder="Ask a question about company policies, SOPs, or technical manuals..."
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  disabled={chatLoading}
+                />
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={!chatInput.trim() || chatLoading}
+                  style={{ minWidth: '90px' }}
+                >
+                  {chatLoading ? 'Thinking...' : 'Ask AI 🚀'}
+                </button>
+              </form>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* ── Knowledge Source Create/Edit Modal ── */}
       {ksModalOpen && (
         <div className="modal-overlay" onClick={() => setKsModalOpen(false)}>
@@ -1593,7 +1972,7 @@ export default function App() {
 
       {/* ── Footer ── */}
       <footer className="dashboard-footer">
-        <span>Stitch AI System — Modules 4.6–10 Live Integrated</span>
+        <span>Stitch AI System — Modules 4.6–11 Live Integrated</span>
         <span>Environment: <strong>development</strong></span>
       </footer>
     </div>

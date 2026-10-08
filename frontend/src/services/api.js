@@ -371,3 +371,39 @@ export async function batchProcessDocuments(knowledgeSourceId) {
 export async function deleteDocument(id) {
   return request(`/documents/${id}`, { method: 'DELETE' });
 }
+
+/**
+ * ── Module 11: RAG Query & Conversational AI Assistant API Functions ──
+ */
+
+/**
+ * Execute single-turn semantic search and grounded answer generation.
+ * Enforces security by omitting any client-controlled companyId.
+ * @param {Object} payload - { query: string, top_k?: number, score_threshold?: number, departmentId?: string, category?: string }
+ */
+export async function queryRAG(payload = {}) {
+  const safePayload = { ...payload };
+  delete safePayload.companyId;
+  delete safePayload.company_id;
+  return request('/rag/query', {
+    method: 'POST',
+    body: JSON.stringify(safePayload),
+  });
+}
+
+/**
+ * Execute multi-turn conversational RAG chat query with history.
+ * Enforces security by omitting any client-controlled companyId.
+ * @param {Object} payload - { query: string, chat_history?: Array<{role: string, content: string}>, top_k?: number, score_threshold?: number, departmentId?: string, category?: string }
+ */
+export async function chatRAG(payload = {}) {
+  const safePayload = { ...payload };
+  delete safePayload.companyId;
+  delete safePayload.company_id;
+  return request('/rag/chat', {
+    method: 'POST',
+    body: JSON.stringify(safePayload),
+  });
+}
+
+

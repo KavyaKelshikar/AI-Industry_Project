@@ -93,6 +93,7 @@ const documentSchema = new mongoose.Schema(
       type: String,
       trim: true,
       lowercase: true,
+      default: 'internal',
       // e.g., 'public', 'internal', 'confidential'
     },
     category: {
