@@ -55,6 +55,20 @@ class PDFExtractor(BaseExtractor):
                     page_raw = ""
 
                 cleaned_page = clean_text(page_raw)
+                if not cleaned_page:
+                    # Attempt OCR on scanned PDF page
+                    try:
+                        from PIL import Image
+                        import pytesseract
+                        from src.document_processing.tesseract_extractor import _configure_tesseract_cmd
+                        if _configure_tesseract_cmd():
+                            pix = page.get_pixmap()
+                            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                            ocr_text = pytesseract.image_to_string(img)
+                            cleaned_page = clean_text(ocr_text)
+                    except Exception as ocr_err:
+                        logger.debug("PDF OCR page fallback skipped: %s", ocr_err)
+
                 if cleaned_page:
                     unit = ExtractedUnit(
                         text=cleaned_page,

@@ -96,7 +96,7 @@ The `retrieval` package (`src/retrieval/`) provides tenant-isolated semantic sea
 - **Strict Grounding Directive**: Instructs the LLM to answer strictly from provided facts and return standard insufficient documentation disclaimers when facts are missing.
 
 ### 3. LLM Generation & Fallback Layer (`ai-service/src/llm/`)
-- **`GeminiLLMClient`**: Google Gemini API client (`gemini-1.5-flash`) operating at low temperature (`0.1`) for factual precision.
+- **`GeminiLLMClient`**: Google Gemini API client (model set by `GEMINI_MODEL`, default `gemini-3.5-flash`) operating at low temperature (`0.1`) for factual precision.
 - **`DeterministicGroundingLLMClient`**: Deterministic offline grounding fallback used when API keys are absent or during isolated test verification.
 - **Client Factory (`get_llm_client()`)**: Resolves active provider based on environment credentials.
 

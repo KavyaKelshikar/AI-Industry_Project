@@ -144,9 +144,12 @@ class TestDOCXExtractor:
 
 class TestExtractorFactory:
     def test_get_extractor_by_extension(self):
+        from src.document_processing.tesseract_extractor import TesseractExtractor
         assert isinstance(get_extractor("report.pdf"), PDFExtractor)
         assert isinstance(get_extractor("report.docx"), DOCXExtractor)
         assert isinstance(get_extractor("readme.txt"), TXTExtractor)
+        assert isinstance(get_extractor("diagram.png"), TesseractExtractor)
+        assert isinstance(get_extractor("photo.jpg"), TesseractExtractor)
         assert isinstance(get_extractor(".pdf"), PDFExtractor)
 
     def test_get_extractor_unsupported_type_raises_error(self):
@@ -154,4 +157,28 @@ class TestExtractorFactory:
             get_extractor("archive.zip")
 
         with pytest.raises(UnsupportedFileTypeError):
-            get_extractor("image.png")
+            get_extractor("binary.exe")
+
+
+class TestTesseractExtractor:
+    def test_supported_extensions(self):
+        from src.document_processing.tesseract_extractor import TesseractExtractor
+        extractor = TesseractExtractor()
+        for ext in [".png", ".jpg", ".jpeg", ".webp"]:
+            assert ext in extractor.supported_extensions
+
+    def test_extract_image_with_fallback(self, temp_dir, monkeypatch):
+        from PIL import Image
+        from src.document_processing.tesseract_extractor import TesseractExtractor
+
+        monkeypatch.setenv("OCR_MOCK_FALLBACK", "true")
+        img_path = os.path.join(temp_dir, "test_ocr.png")
+        img = Image.new("RGB", (100, 100), color="white")
+        img.save(img_path)
+
+        extractor = TesseractExtractor()
+        doc = extractor.extract(img_path)
+        assert doc.file_name == "test_ocr.png"
+        assert doc.file_type == "png"
+        assert len(doc.units) == 1
+        assert "OCR Extracted" in doc.raw_text or len(doc.raw_text) > 0

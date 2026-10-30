@@ -12,7 +12,9 @@
   "jest": {
     "testEnvironment": "node",
     "testTimeout": 30000,
-    "setupFiles": ["<rootDir>/tests/setup.js"]
+    "setupFiles": [
+      "<rootDir>/tests/setup.js"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -31,6 +33,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.1",
     "morgan": "^1.11.0",
+    "multer": "^2.4.0",
     "winston": "^3.19.0"
   },
   "devDependencies": {

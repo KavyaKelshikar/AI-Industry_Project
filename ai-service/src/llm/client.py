@@ -80,11 +80,11 @@ class GeminiLLMClient(BaseLLMClient):
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model_name: str = "gemini-1.5-flash",
+        model_name: Optional[str] = None,
         timeout_seconds: float = 30.0,
     ):
         self._api_key = api_key if api_key is not None else settings.GEMINI_API_KEY
-        self.model_name = model_name
+        self.model_name = model_name or settings.GEMINI_MODEL
         self.timeout_seconds = timeout_seconds
 
     @property

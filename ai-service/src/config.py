@@ -35,6 +35,9 @@ class Settings:
 
     # LLM
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    # Gemini model identifier. gemini-1.5-flash has been shut down by Google;
+    # confirm availability at https://ai.google.dev/gemini-api/docs/deprecations
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
     # Vector Database
     CHROMADB_HOST: str = os.getenv("CHROMADB_HOST", "localhost")

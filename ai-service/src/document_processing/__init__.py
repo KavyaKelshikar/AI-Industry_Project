@@ -23,6 +23,7 @@ from src.document_processing.extractor import (
 )
 from src.document_processing.pdf_extractor import PDFExtractor
 from src.document_processing.txt_extractor import TXTExtractor
+from src.document_processing.tesseract_extractor import TesseractExtractor
 
 __all__ = [
     "clean_text",
@@ -36,6 +37,7 @@ __all__ = [
     "TXTExtractor",
     "PDFExtractor",
     "DOCXExtractor",
+    "TesseractExtractor",
     "DocumentProcessingError",
     "ExtractorError",
     "UnsupportedFileTypeError",

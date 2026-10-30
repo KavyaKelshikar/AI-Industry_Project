@@ -178,6 +178,13 @@ class BaseRepository {
   }
 
   /**
+   * Count documents matching filter within trusted scope
+   */
+  async count(query = {}, scope = {}) {
+    return await this.model.countDocuments(this.buildScopedFilter(query, scope));
+  }
+
+  /**
    * Delete a single document by its ID
    * @param {String} id - The document ID
    * @returns {Promise<Object|null>} The deleted document or null

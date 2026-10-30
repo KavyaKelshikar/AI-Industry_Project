@@ -105,6 +105,39 @@ const deleteDocument = async (req, res, next) => {
   }
 };
 
+/**
+ * POST /api/v1/documents/upload
+ * Handle multipart document file uploads with limits and metadata
+ */
+const uploadDocuments = async (req, res, next) => {
+  try {
+    const scope = req.tenantScope || {};
+    const files = req.files || (req.file ? [req.file] : []);
+    const metadata = {
+      classification: req.body.classification || 'internal',
+      category: req.body.category || 'General',
+      departmentId: req.body.departmentId || null,
+      tags: req.body.tags || [],
+    };
+
+    const uploaded = await DocumentProcessingService.uploadDocuments(
+      files,
+      metadata,
+      scope,
+      req.user
+    );
+
+    return successResponse(
+      res,
+      uploaded,
+      `Successfully uploaded ${uploaded.length} document(s)`,
+      201
+    );
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getDocumentStats,
   listDocuments,
@@ -112,4 +145,5 @@ module.exports = {
   processDocument,
   batchProcess,
   deleteDocument,
+  uploadDocuments,
 };

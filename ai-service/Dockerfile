@@ -10,6 +10,12 @@ RUN pip install --no-cache-dir --target=/app/dependencies -r requirements.txt
 # ── Stage 2: Production image ──
 FROM python:3.12-slim AS production
 
+# Install Tesseract OCR binaries
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    && rm -rf /var/lib/apt/lists/*
+
 # Security: run as non-root user
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 

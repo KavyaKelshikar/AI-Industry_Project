@@ -32,8 +32,9 @@ export const clearAccessToken = () => {
 async function request(endpoint, options = {}, isRetry = false) {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
   
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
   const headers = {
-    'Content-Type': 'application/json',
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
     ...(options.headers || {}),
   };
 
@@ -405,5 +406,116 @@ export async function chatRAG(payload = {}) {
     body: JSON.stringify(safePayload),
   });
 }
+
+/**
+ * Upload one or multiple files directly
+ * @param {FormData} formData
+ */
+export async function uploadDocuments(formData) {
+  return request('/documents/upload', {
+    method: 'POST',
+    body: formData,
+  });
+}
+
+/**
+ * ── Department API Functions ──
+ */
+export async function getDepartments(params = {}) {
+  const query = new URLSearchParams(params).toString();
+  return request(`/departments${query ? `?${query}` : ''}`);
+}
+
+export async function createDepartment(data) {
+  return request('/departments', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateDepartment(id, data) {
+  return request(`/departments/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteDepartment(id) {
+  return request(`/departments/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+/**
+ * ── Role & Permission API Functions ──
+ */
+export async function getRoles() {
+  return request('/roles');
+}
+
+export async function getPermissions() {
+  return request('/roles/permissions');
+}
+
+export async function createRole(data) {
+  return request('/roles', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * ── Persistent Chat Session API Functions ──
+ */
+export async function getChatSessions() {
+  return request('/chat/sessions');
+}
+
+export async function getChatSession(id) {
+  return request(`/chat/sessions/${id}`);
+}
+
+export async function createChatSession(title) {
+  return request('/chat/sessions', {
+    method: 'POST',
+    body: JSON.stringify({ title: title || 'New Chat' }),
+  });
+}
+
+export async function sendChatMessage(sessionId, content, top_k = 5) {
+  return request(`/chat/sessions/${sessionId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ content, top_k }),
+  });
+}
+
+export async function deleteChatSession(id) {
+  return request(`/chat/sessions/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+/**
+ * ── Audit Logs API Functions ──
+ */
+export async function getAuditLogs(params = {}) {
+  const query = new URLSearchParams(params).toString();
+  return request(`/audit-logs${query ? `?${query}` : ''}`);
+}
+
+/**
+ * ── Company Profile API Functions ──
+ */
+export async function getCompany() {
+  return request('/company');
+}
+
+export async function updateCompany(data) {
+  return request('/company', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
 
 

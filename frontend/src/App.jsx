@@ -82,6 +82,34 @@ export default function App() {
   const [chatTopK, setChatTopK] = useState(5);
   const [lastFailedQuery, setLastFailedQuery] = useState(null);
 
+  // ── File Upload State ──
+  const [selectedUploadFiles, setSelectedUploadFiles] = useState([]);
+  const [uploadClassification, setUploadClassification] = useState('internal');
+  const [uploadCategory, setUploadCategory] = useState('General');
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadFeedback, setUploadFeedback] = useState(null);
+
+  // ── Persistent Chat Sessions State ──
+  const [chatSessions, setChatSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+
+  // ── Organization (Departments, Roles, Audit Logs) State ──
+  const [orgTab, setOrgTab] = useState('departments'); // 'departments' | 'roles' | 'audit'
+  const [departmentsList, setDepartmentsList] = useState([]);
+  const [rolesList, setRolesList] = useState([]);
+  const [permissionsList, setPermissionsList] = useState([]);
+  const [auditLogsList, setAuditLogsList] = useState([]);
+  const [auditPagination, setAuditPagination] = useState({ page: 1, limit: 10, total: 0, pages: 1 });
+  const [deptModalOpen, setDeptModalOpen] = useState(false);
+  const [editingDept, setEditingDept] = useState(null);
+  const [deptForm, setDeptForm] = useState({ name: '', description: '' });
+  const [roleModalOpen, setRoleModalOpen] = useState(false);
+  const [roleForm, setRoleForm] = useState({ name: '', description: '', permissionIds: [] });
+
+  // ── Drag-and-Drop Upload State ──
+  const [isDragOver, setIsDragOver] = useState(false);
+
 
   // ── 1. Fetch Platform Health ──
   const fetchHealth = useCallback(async () => {
@@ -238,6 +266,170 @@ export default function App() {
     setChatError(null);
     setLastFailedQuery(null);
   }, [currentUserId]);
+
+  // ── Fetch Chat Sessions ──
+  const fetchChatSessionsList = useCallback(async () => {
+    if (!userSession) return;
+    setSessionsLoading(true);
+    try {
+      const res = await api.getChatSessions();
+      if (res.ok && res.data) {
+        setChatSessions(res.data);
+      }
+    } catch (err) {
+      console.error('Failed to load chat sessions:', err);
+    } finally {
+      setSessionsLoading(false);
+    }
+  }, [userSession]);
+
+  // ── Fetch Departments, Roles, Permissions ──
+  const fetchOrgData = useCallback(async () => {
+    if (!userSession) return;
+    try {
+      const [deptRes, rolesRes, permRes] = await Promise.all([
+        api.getDepartments(),
+        api.getRoles(),
+        api.getPermissions(),
+      ]);
+      if (deptRes.ok && deptRes.data) setDepartmentsList(deptRes.data);
+      if (rolesRes.ok && rolesRes.data) setRolesList(rolesRes.data);
+      if (permRes.ok && permRes.data) setPermissionsList(permRes.data);
+    } catch (err) {
+      console.error('Failed to load organization data:', err);
+    }
+  }, [userSession]);
+
+  // ── Fetch Audit Logs ──
+  const fetchAuditLogsList = useCallback(async (page = 1) => {
+    if (!userSession) return;
+    try {
+      const res = await api.getAuditLogs({ page, limit: 10 });
+      if (res.ok && res.data) {
+        setAuditLogsList(res.data.items || []);
+        if (res.data.pagination) setAuditPagination(res.data.pagination);
+      }
+    } catch (err) {
+      console.error('Failed to load audit logs:', err);
+    }
+  }, [userSession]);
+
+  useEffect(() => {
+    if (userSession && currentSection === 'rag-assistant') {
+      fetchChatSessionsList();
+    }
+  }, [userSession, currentSection, fetchChatSessionsList]);
+
+  useEffect(() => {
+    if (userSession && currentSection === 'organization') {
+      fetchOrgData();
+      if (orgTab === 'audit') fetchAuditLogsList();
+    }
+  }, [userSession, currentSection, orgTab, fetchOrgData, fetchAuditLogsList]);
+
+  // ── File Upload Handler with Validation ──
+  const handleFileUpload = async (e) => {
+    e.preventDefault();
+    if (!selectedUploadFiles || selectedUploadFiles.length === 0) {
+      alert('Please select at least one file to upload.');
+      return;
+    }
+
+    if (selectedUploadFiles.length > 10) {
+      alert('Batch upload limit exceeded: Maximum 10 files allowed at once.');
+      return;
+    }
+
+    const MAX_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
+    for (const f of selectedUploadFiles) {
+      if (f.size > MAX_SIZE_BYTES) {
+        alert(`File "${f.name}" exceeds the 50MB size limit (${(f.size / (1024 * 1024)).toFixed(1)}MB).`);
+        return;
+      }
+    }
+
+    setUploadLoading(true);
+    setUploadFeedback(null);
+    try {
+      const formData = new FormData();
+      Array.from(selectedUploadFiles).forEach((file) => {
+        formData.append('files', file);
+      });
+      formData.append('classification', uploadClassification);
+      formData.append('category', uploadCategory);
+
+      const res = await api.uploadDocuments(formData);
+      setLatestPayload({ endpoint: 'POST /api/v1/documents/upload', timestamp: new Date().toLocaleTimeString(), response: res });
+
+      if (res.ok) {
+        setUploadFeedback({ type: 'success', message: `Successfully uploaded ${selectedUploadFiles.length} file(s)! Queued for vector ingestion.` });
+        setSelectedUploadFiles([]);
+        fetchDocumentsList();
+      } else {
+        setUploadFeedback({ type: 'error', message: res.error?.message || 'File upload failed' });
+      }
+    } catch (err) {
+      setUploadFeedback({ type: 'error', message: err.message });
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  // ── Session Switch & History Loader ──
+  const handleSelectSession = async (sessionId) => {
+    setActiveSessionId(sessionId);
+    setChatLoading(true);
+    setChatError(null);
+    try {
+      const res = await api.getChatSession(sessionId);
+      if (res.ok && res.data) {
+        const loadedMessages = (res.data.messages || []).map((m) => ({
+          id: m._id || m.id,
+          role: m.role,
+          content: m.content,
+          sources: m.sources || [],
+          grounded: true,
+          timestamp: new Date(m.timestamp).toLocaleTimeString(),
+        }));
+        setChatMessages(loadedMessages);
+      }
+    } catch (err) {
+      setChatError('Failed to load session messages');
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const handleStartNewSession = async () => {
+    try {
+      const res = await api.createChatSession('New Chat');
+      if (res.ok && res.data) {
+        setActiveSessionId(res.data._id || res.data.id);
+        setChatMessages([]);
+        fetchChatSessionsList();
+      }
+    } catch (err) {
+      console.error('Failed to create chat session:', err);
+    }
+  };
+
+  const handleDeleteSession = async (e, sessionId) => {
+    e.stopPropagation();
+    if (!window.confirm('Delete this conversation session?')) return;
+    try {
+      const res = await api.deleteChatSession(sessionId);
+      if (res.ok) {
+        if (activeSessionId === sessionId) {
+          setActiveSessionId(null);
+          setChatMessages([]);
+        }
+        fetchChatSessionsList();
+      }
+    } catch (err) {
+      alert('Failed to delete session');
+    }
+  };
+
 
 
   // ── Auth Handlers ──
@@ -679,6 +871,120 @@ export default function App() {
     setLastFailedQuery(null);
   };
 
+  // ── Drag-and-Drop Handlers ──
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    if (droppedFiles.length > 10) {
+      alert('Maximum 10 files allowed per batch upload.');
+      return;
+    }
+    const MAX_SIZE_BYTES = 50 * 1024 * 1024;
+    for (const f of droppedFiles) {
+      if (f.size > MAX_SIZE_BYTES) {
+        alert(`File "${f.name}" exceeds the 50MB size limit (${(f.size / (1024 * 1024)).toFixed(1)}MB).`);
+        return;
+      }
+    }
+    setSelectedUploadFiles(droppedFiles);
+  };
+
+  // ── Department CRUD Handlers ──
+  const openCreateDeptModal = () => {
+    setEditingDept(null);
+    setDeptForm({ name: '', description: '' });
+    setDeptModalOpen(true);
+  };
+
+  const openEditDeptModal = (dept) => {
+    setEditingDept(dept);
+    setDeptForm({ name: dept.name || '', description: dept.description || '' });
+    setDeptModalOpen(true);
+  };
+
+  const handleSaveDept = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingDept) {
+        const res = await api.updateDepartment(editingDept.id || editingDept._id, deptForm);
+        if (!res.ok) {
+          alert(res.error?.message || 'Failed to update department');
+          return;
+        }
+      } else {
+        const res = await api.createDepartment(deptForm);
+        if (!res.ok) {
+          alert(res.error?.message || 'Failed to create department');
+          return;
+        }
+      }
+      setDeptModalOpen(false);
+      setEditingDept(null);
+      setDeptForm({ name: '', description: '' });
+      fetchOrgData();
+    } catch (err) {
+      alert('Error saving department: ' + err.message);
+    }
+  };
+
+  const handleDeleteDept = async (dept) => {
+    if (!window.confirm(`Delete department "${dept.name}"? This action cannot be undone.`)) return;
+    try {
+      const res = await api.deleteDepartment(dept.id || dept._id);
+      if (res.ok) {
+        fetchOrgData();
+      } else {
+        alert(res.error?.message || 'Failed to delete department');
+      }
+    } catch (err) {
+      alert('Error deleting department: ' + err.message);
+    }
+  };
+
+  // ── Role & Permission Handlers ──
+  const toggleRolePermission = (permId) => {
+    setRoleForm((prev) => ({
+      ...prev,
+      permissionIds: prev.permissionIds.includes(permId)
+        ? prev.permissionIds.filter((id) => id !== permId)
+        : [...prev.permissionIds, permId],
+    }));
+  };
+
+  const handleSaveRole = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.createRole({
+        name: roleForm.name,
+        description: roleForm.description,
+        permissionIds: roleForm.permissionIds,
+      });
+      if (res.ok) {
+        setRoleModalOpen(false);
+        setRoleForm({ name: '', description: '', permissionIds: [] });
+        fetchOrgData();
+      } else {
+        alert(res.error?.message || 'Failed to create role');
+      }
+    } catch (err) {
+      alert('Error creating role: ' + err.message);
+    }
+  };
+
 
   const getDocIndexingStatusClass = (status) => {
     if (status === 'indexed') return 'doc-status-indexed';
@@ -761,6 +1067,17 @@ export default function App() {
           onClick={() => setCurrentSection('rag-assistant')}
         >
           🤖 AI Knowledge Assistant (Module 11)
+        </button>
+        <button
+          className={`nav-tab-btn ${currentSection === 'organization' ? 'active' : ''}`}
+          onClick={() => {
+            if (!userSession) {
+              alert('Please sign in first to manage company organization & audit logs.');
+            }
+            setCurrentSection('organization');
+          }}
+        >
+          🏢 Organization & Security (Module 6 & 13)
         </button>
       </nav>
 
@@ -1530,6 +1847,123 @@ export default function App() {
             </div>
           </div>
 
+          {/* Direct File Upload Zone with Size Limits, OCR Engine & Drag-and-Drop */}
+          <div
+            className={`upload-dropzone-container ${isDragOver ? 'drag-over' : ''}`}
+            style={{ marginTop: '20px' }}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <div className="upload-icon-large">{isDragOver ? '📥' : '📤'}</div>
+            <h3 style={{ margin: '0 0 6px 0', color: '#f8fafc', fontSize: '16px' }}>
+              {isDragOver ? 'Drop Files Here to Upload' : 'Direct Document & Scanned Image Upload'}
+            </h3>
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '13px' }}>
+              {isDragOver
+                ? 'Release to add files for ingestion...'
+                : 'Drag & drop files here, or click "Choose Files" below. Text extraction, chunk embedding, and ChromaDB indexing are automatic.'}
+            </p>
+
+            <div className="upload-limits-badge-group">
+              <span className="limit-pill">🛡️ Limit: Max 10 Files / Batch</span>
+              <span className="limit-pill">📦 Limit: Max 50MB / File</span>
+              <span className="ocr-feature-pill">✨ Tesseract OCR Enabled (Scanned Images & PDFs)</span>
+            </div>
+
+            <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <input
+                id="doc-file-upload-input"
+                type="file"
+                multiple
+                accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.webp,.tiff,.bmp"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  if (e.target.files) {
+                    if (e.target.files.length > 10) {
+                      alert('You can upload a maximum of 10 files at once.');
+                      return;
+                    }
+                    setSelectedUploadFiles(Array.from(e.target.files));
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="btn-primary btn-sm"
+                onClick={() => document.getElementById('doc-file-upload-input').click()}
+                disabled={uploadLoading}
+              >
+                📁 Choose Files (PDF, DOCX, TXT, Images)
+              </button>
+
+              <select
+                className="table-filter-select"
+                style={{ width: 'auto', padding: '6px 10px' }}
+                value={uploadClassification}
+                onChange={(e) => setUploadClassification(e.target.value)}
+              >
+                <option value="internal">Classification: Internal</option>
+                <option value="public">Classification: Public</option>
+                <option value="confidential">Classification: Confidential</option>
+              </select>
+
+              <select
+                className="table-filter-select"
+                style={{ width: 'auto', padding: '6px 10px' }}
+                value={uploadCategory}
+                onChange={(e) => setUploadCategory(e.target.value)}
+              >
+                <option value="General">Category: General</option>
+                <option value="SOP">Category: SOP</option>
+                <option value="Policy">Category: Policy</option>
+                <option value="Manual">Category: Manual</option>
+              </select>
+
+              {selectedUploadFiles.length > 0 && (
+                <button
+                  type="button"
+                  className="btn-primary btn-sm"
+                  style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}
+                  onClick={handleFileUpload}
+                  disabled={uploadLoading}
+                >
+                  {uploadLoading ? '⏳ Uploading...' : `🚀 Upload ${selectedUploadFiles.length} Selected File(s)`}
+                </button>
+              )}
+            </div>
+
+            {selectedUploadFiles.length > 0 && (
+              <div className="selected-files-preview">
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                  <span>Selected Files ({selectedUploadFiles.length}/10):</span>
+                  <button
+                    type="button"
+                    style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '12px' }}
+                    onClick={() => setSelectedUploadFiles([])}
+                  >
+                    Clear All
+                  </button>
+                </div>
+                {selectedUploadFiles.map((file, idx) => (
+                  <div key={idx} className="file-preview-item">
+                    <span>📄 {file.name}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{(file.size / 1024).toFixed(1)} KB</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {uploadFeedback && (
+              <div
+                className={`feedback-alert ${uploadFeedback.type === 'success' ? 'feedback-success' : 'feedback-error'}`}
+                style={{ marginTop: '12px' }}
+              >
+                {uploadFeedback.type === 'success' ? '✅' : '⚠️'} {uploadFeedback.message}
+              </div>
+            )}
+          </div>
+
           {/* Control Bar: Search & Filter */}
           <div className="employee-control-bar">
             <div className="search-filter-group">
@@ -1686,7 +2120,241 @@ export default function App() {
         </section>
       )}
 
-      {/* ── SECTION 5: AI Knowledge Assistant (Module 11) ── */}
+      {/* ── SECTION 5: Organization & Security (Module 6 & 13) ── */}
+      {currentSection === 'organization' && (
+        <section className="panel">
+          <div className="panel-header">
+            <div>
+              <h2 className="panel-title">Organization & Security Management</h2>
+              <p className="brand-subtitle">
+                Scoped to: <strong>{userSession?.company?.name || 'Your Company Tenant'}</strong>
+              </p>
+            </div>
+          </div>
+
+          {/* Org Sub-Tabs */}
+          <div className="org-subtabs">
+            <button
+              className={`org-subtab-btn ${orgTab === 'departments' ? 'active' : ''}`}
+              onClick={() => setOrgTab('departments')}
+            >
+              🏢 Departments
+            </button>
+            <button
+              className={`org-subtab-btn ${orgTab === 'roles' ? 'active' : ''}`}
+              onClick={() => setOrgTab('roles')}
+            >
+              🔑 Roles & Permissions
+            </button>
+            <button
+              className={`org-subtab-btn ${orgTab === 'audit' ? 'active' : ''}`}
+              onClick={() => { setOrgTab('audit'); fetchAuditLogsList(); }}
+            >
+              📋 Audit Logs
+            </button>
+          </div>
+
+          {/* Departments Tab */}
+          {orgTab === 'departments' && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>
+                  Manage company departments. Each department can be assigned to employees and used for document scoping.
+                </p>
+                <button className="btn-primary btn-sm" onClick={openCreateDeptModal}>+ Add Department</button>
+              </div>
+              <div className="employee-table-wrapper">
+                <table className="employee-table">
+                  <thead>
+                    <tr>
+                      <th>Department Name</th>
+                      <th>Description</th>
+                      <th>Created At</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {departmentsList.length > 0 ? (
+                      departmentsList.map((dept) => (
+                        <tr key={dept.id || dept._id}>
+                          <td>
+                            <div className="user-cell">
+                              <div className="emp-avatar" style={{ background: 'linear-gradient(135deg, #14b8a6, #0d9488)' }}>🏢</div>
+                              <div className="emp-name">{dept.name}</div>
+                            </div>
+                          </td>
+                          <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{dept.description || '—'}</td>
+                          <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                            {dept.createdAt ? new Date(dept.createdAt).toLocaleDateString() : '—'}
+                          </td>
+                          <td>
+                            <div className="action-buttons-group">
+                              <button className="btn-action-icon" title="Edit" onClick={() => openEditDeptModal(dept)}>✏️</button>
+                              <button className="btn-action-icon btn-action-delete" title="Delete" onClick={() => handleDeleteDept(dept)}>🗑️</button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                          No departments created yet. Add your first department to start organizing.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Roles & Permissions Tab */}
+          {orgTab === 'roles' && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>
+                  Roles define what actions employees can perform. Each role bundles a set of granular permissions.
+                </p>
+                <button className="btn-primary btn-sm" onClick={() => { setRoleForm({ name: '', description: '', permissionIds: [] }); setRoleModalOpen(true); }}>+ Create Role</button>
+              </div>
+              <div className="employee-table-wrapper">
+                <table className="employee-table">
+                  <thead>
+                    <tr>
+                      <th>Role Name</th>
+                      <th>Description</th>
+                      <th>Permissions</th>
+                      <th>System Role</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rolesList.length > 0 ? (
+                      rolesList.map((role) => (
+                        <tr key={role.id || role._id}>
+                          <td>
+                            <div className="user-cell">
+                              <div className="emp-avatar" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>🔑</div>
+                              <div className="emp-name">{role.name}</div>
+                            </div>
+                          </td>
+                          <td style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{role.description || '—'}</td>
+                          <td>
+                            <div className="permission-chips" style={{ maxWidth: '400px', flexWrap: 'wrap' }}>
+                              {role.permissions && role.permissions.length > 0 ? (
+                                role.permissions.slice(0, 6).map((perm, idx) => (
+                                  <span key={idx} className="perm-chip" style={{ fontSize: '10px' }}>
+                                    {typeof perm === 'object' ? (perm.code || perm.name) : perm}
+                                  </span>
+                                ))
+                              ) : (
+                                <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No permissions</span>
+                              )}
+                              {role.permissions && role.permissions.length > 6 && (
+                                <span className="perm-chip" style={{ fontSize: '10px', background: 'rgba(99,102,241,0.2)' }}>+{role.permissions.length - 6} more</span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`status-badge ${role.isSystem ? 'status-active' : 'status-inactive'}`}>
+                              {role.isSystem ? 'System' : 'Custom'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                          No roles found. Create a custom role to assign specific permissions.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Audit Logs Tab */}
+          {orgTab === 'audit' && (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>
+                  Security audit trail. All administrative actions are logged with user context and timestamps.
+                </p>
+                <button className="btn-secondary btn-sm" onClick={() => fetchAuditLogsList(auditPagination.page)} >🔄 Refresh Logs</button>
+              </div>
+              <div className="employee-table-wrapper">
+                <table className="employee-table">
+                  <thead>
+                    <tr>
+                      <th>Action</th>
+                      <th>Resource</th>
+                      <th>User</th>
+                      <th>IP Address</th>
+                      <th>Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditLogsList.length > 0 ? (
+                      auditLogsList.map((log) => (
+                        <tr key={log.id || log._id}>
+                          <td>
+                            <span className="ks-type-badge" style={{ textTransform: 'uppercase', fontSize: '10px' }}>
+                              {log.action || log.eventType || 'UNKNOWN'}
+                            </span>
+                          </td>
+                          <td style={{ color: 'var(--text-main)', fontSize: '13px' }}>
+                            {log.resource || log.targetType || '—'}
+                            {log.resourceId || log.targetId ? <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}> ({(log.resourceId || log.targetId || '').toString().slice(-8)})</span> : null}
+                          </td>
+                          <td style={{ fontSize: '13px' }}>
+                            {log.user?.name || log.userName || log.userId || '—'}
+                          </td>
+                          <td style={{ color: 'var(--text-muted)', fontSize: '12px', fontFamily: 'monospace' }}>
+                            {log.ipAddress || log.ip || '—'}
+                          </td>
+                          <td style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
+                            {log.createdAt ? new Date(log.createdAt).toLocaleString() : (log.timestamp ? new Date(log.timestamp).toLocaleString() : '—')}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', padding: '36px', color: 'var(--text-muted)' }}>
+                          No audit logs recorded yet. Logs are automatically generated for administrative actions.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+
+                {/* Pagination */}
+                <div className="table-pagination">
+                  <span>Page {auditPagination.page} of {auditPagination.pages || 1} ({auditPagination.total} total)</span>
+                  <div className="pagination-controls">
+                    <button
+                      className="btn-secondary btn-sm"
+                      disabled={auditPagination.page <= 1}
+                      onClick={() => fetchAuditLogsList(auditPagination.page - 1)}
+                    >
+                      ◀ Previous
+                    </button>
+                    <button
+                      className="btn-secondary btn-sm"
+                      disabled={auditPagination.page >= auditPagination.pages}
+                      onClick={() => fetchAuditLogsList(auditPagination.page + 1)}
+                    >
+                      Next ▶
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── SECTION 6: AI Knowledge Assistant (Module 11) ── */}
       {currentSection === 'rag-assistant' && (
         <section className="rag-assistant-section">
           {/* Header Bar */}
@@ -1758,6 +2426,52 @@ export default function App() {
             </div>
           ) : (
             <div className="rag-chat-container">
+              {/* Chat Sessions Sidebar */}
+              <div className="rag-sessions-sidebar">
+                <div className="rag-sessions-header">
+                  <span className="rag-sessions-title">💬 Sessions</span>
+                  <button
+                    type="button"
+                    className="btn-primary btn-sm"
+                    style={{ fontSize: '11px', padding: '4px 10px' }}
+                    onClick={handleStartNewSession}
+                    disabled={sessionsLoading}
+                  >
+                    + New
+                  </button>
+                </div>
+                <div className="rag-sessions-list">
+                  {chatSessions.length > 0 ? (
+                    chatSessions.map((session) => (
+                      <div
+                        key={session.id || session._id}
+                        className={`rag-session-item ${activeSessionId === (session.id || session._id) ? 'active' : ''}`}
+                        onClick={() => handleSelectSession(session.id || session._id)}
+                      >
+                        <div className="rag-session-info">
+                          <span className="rag-session-name">{session.title || 'Untitled'}</span>
+                          <span className="rag-session-date">
+                            {session.updatedAt ? new Date(session.updatedAt).toLocaleDateString() : ''}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          className="rag-session-delete"
+                          onClick={(e) => handleDeleteSession(e, session.id || session._id)}
+                          title="Delete session"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rag-sessions-empty">
+                      <span>No saved sessions</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Message Stream */}
               <div className="rag-messages-stream">
                 {chatMessages.length === 0 ? (
@@ -1964,6 +2678,109 @@ export default function App() {
               <div className="modal-footer">
                 <button type="button" className="btn-secondary" onClick={() => setKsModalOpen(false)}>Cancel</button>
                 <button type="submit" className="btn-primary">{editingSource ? 'Save Changes' : 'Add Source'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Department Create/Edit Modal ── */}
+      {deptModalOpen && (
+        <div className="modal-overlay" onClick={() => setDeptModalOpen(false)}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">
+                {editingDept ? `Edit Department: ${editingDept.name}` : 'Create New Department'}
+              </h3>
+              <button className="modal-close-btn" onClick={() => setDeptModalOpen(false)}>✕</button>
+            </div>
+            <form onSubmit={handleSaveDept}>
+              <div className="modal-body">
+                <div className="form-stack">
+                  <div className="form-group">
+                    <label>Department Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g., Engineering, Human Resources"
+                      value={deptForm.name}
+                      onChange={(e) => setDeptForm({ ...deptForm, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Description (optional)</label>
+                    <input
+                      type="text"
+                      placeholder="Brief description of this department"
+                      value={deptForm.description}
+                      onChange={(e) => setDeptForm({ ...deptForm, description: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn-secondary" onClick={() => setDeptModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn-primary">{editingDept ? 'Save Changes' : 'Create Department'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Role Create Modal ── */}
+      {roleModalOpen && (
+        <div className="modal-overlay" onClick={() => setRoleModalOpen(false)}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+            <div className="modal-header">
+              <h3 className="modal-title">Create Custom Role</h3>
+              <button className="modal-close-btn" onClick={() => setRoleModalOpen(false)}>✕</button>
+            </div>
+            <form onSubmit={handleSaveRole}>
+              <div className="modal-body">
+                <div className="form-stack">
+                  <div className="form-group">
+                    <label>Role Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g., Content Manager, Viewer"
+                      value={roleForm.name}
+                      onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Description</label>
+                    <input
+                      type="text"
+                      placeholder="What this role is for"
+                      value={roleForm.description}
+                      onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Assign Permissions ({roleForm.permissionIds.length} selected)</label>
+                    <div className="permission-selector-grid">
+                      {permissionsList.length > 0 ? (
+                        permissionsList.map((perm) => (
+                          <label key={perm.id || perm._id} className="permission-checkbox-label">
+                            <input
+                              type="checkbox"
+                              checked={roleForm.permissionIds.includes(perm.id || perm._id)}
+                              onChange={() => toggleRolePermission(perm.id || perm._id)}
+                            />
+                            <span>{perm.code || perm.name}</span>
+                          </label>
+                        ))
+                      ) : (
+                        <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>No permissions available. Seed the database first.</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn-secondary" onClick={() => setRoleModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn-primary">Create Role</button>
               </div>
             </form>
           </div>

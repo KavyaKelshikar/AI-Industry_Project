@@ -5,12 +5,24 @@ const { enforceTenantScope } = require('../../middlewares/tenant');
 const { requireAnyPermission } = require('../../middlewares/authorize');
 const validate = require('../../middlewares/validate');
 const { documentValidation } = require('../../validators');
+const { handleUpload } = require('../../middlewares/upload');
 
 const router = express.Router();
 
 // Apply authentication and strict tenant boundary scoping to all document routes
 router.use(authenticate);
 router.use(enforceTenantScope);
+
+/**
+ * POST /api/v1/documents/upload
+ * Multipart file upload for documents with size and batch count limits
+ */
+router.post(
+  '/upload',
+  requireAnyPermission('documents:upload', 'documents:manage'),
+  handleUpload('files', 10),
+  documentController.uploadDocuments
+);
 
 /**
  * GET /api/v1/documents/stats

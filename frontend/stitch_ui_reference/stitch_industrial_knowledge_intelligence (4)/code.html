@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-secondary": "#ffffff", "surface": "#f7f9fb", "surface-tint": "#0053db", "inverse-on-surface": "#eff1f3", "secondary-fixed-dim": "#b9c4fb", "on-tertiary": "#ffffff", "primary-fixed": "#dbe1ff", "surface-container-high": "#e6e8ea", "inverse-surface": "#2d3133", "surface-variant": "#e0e3e5", "background": "#f7f9fb", "on-secondary-fixed-variant": "#394473", "surface-dim": "#d8dadc", "inverse-primary": "#b4c5ff", "secondary": "#515c8c", "surface-bright": "#f7f9fb", "on-surface-variant": "#434655", "surface-container-lowest": "#ffffff", "error": "#ba1a1a", "on-surface": "#191c1e", "on-error-container": "#93000a", "on-secondary-container": "#475281", "primary-container": "#2563eb", "outline-variant": "#c3c6d7", "tertiary-container": "#656c89", "primary": "#004ac6", "on-primary-container": "#eeefff", "surface-container-highest": "#e0e3e5", "primary-fixed-dim": "#b4c5ff", "on-primary-fixed": "#00174b", "on-tertiary-fixed": "#131a33", "surface-container": "#eceef0", "on-tertiary-fixed-variant": "#3e4660", "surface-container-low": "#f2f4f6", "tertiary": "#4c546f", "on-primary-fixed-variant": "#003ea8", "secondary-fixed": "#dde1ff", "error-container": "#ffdad6", "secondary-container": "#bcc7fe", "outline": "#737686", "on-error": "#ffffff", "on-secondary-fixed": "#0b1745", "on-tertiary-container": "#eeefff", "on-primary": "#ffffff", "tertiary-fixed": "#dbe1ff", "tertiary-fixed-dim": "#bec5e5", "on-background": "#191c1e" }, "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" }, "spacing": { "margin-mobile": "1rem", "space-sm": "0.5rem", "gutter": "1.25rem", "gutter-mobile": "0.75rem", "space-xs": "0.25rem", "space-xl": "2rem", "space-md": "0.75rem", "space-lg": "1.25rem", "margin": "1.5rem" }, "fontFamily": { "body-md": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "body-sm": ["Inter"], "label-mono-sm": ["JetBrains Mono"], "display-lg": ["Inter"], "title-md": ["Inter"], "headline-xl": ["Inter"], "display-lg-mobile": ["Inter"], "label-md": ["Inter"], "label-mono-xs": ["JetBrains Mono"], "caption-xs": ["Inter"] }, "fontSize": { "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }], "headline-lg": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "body-lg": ["15px", { "lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400" }], "body-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400" }], "label-mono-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.025em", "fontWeight": "700" }], "title-md": ["16px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-xl": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600" }], "display-lg-mobile": ["26px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }], "label-mono-xs": ["11px", { "lineHeight": "14px", "letterSpacing": "0em", "fontWeight": "400" }], "caption-xs": ["11px", { "lineHeight": "14px", "letterSpacing": "0.01em", "fontWeight": "500" }] } } } };</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-inverse-surface z-50 flex flex-col justify-between select-none shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 min-h-0"><div class="h-16 px-space-lg flex items-center justify-between border-b border-surface-variant/10"><div class="flex items-center gap-space-sm"><img alt="A modern, geometric logo for an 'AI Industrial Knowledge Intelligence System'. The mark should combine a stylized industrial gear or circuit with a spark of intelligence or a document icon. Minimalist, professional, navy and corporate blue.. Design context: - Primary color: #2563eb
+- Font: inter
+- Mode: light
+- Roundness: rounded-md
+. The logo should be visually consistent with these brand tokens." class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1W8DCsIVrCqjuVoRZa72Dzhj-a4drktiM842qjJBBWYRK2H1tqArNy782l8ELIHA5jxbij4OV_PVpfg5RFC7-5le0-ZlakSYNrBeQJxxPkybs56UUo2xgAWuCQFT-VllAVgT36dNW8PIQh4a9gf0wn5gqjpYD5DWIhPOTHpbMKFVABSRYlLCovcigOrChe76moeaTPz-mgS7UM8t593zp9RdWcnZ8DR_AkpyBVTjTf8RHttVX-TedmTlQ"/><div class="flex flex-col"><span class="font-headline-lg text-headline-lg tracking-wider text-inverse-on-surface font-bold leading-none">INSIGHTX</span><span class="font-label-mono-xs text-label-mono-xs text-outline tracking-widest uppercase mt-0.5">KNOWLEDGE AI</span></div></div></div><div class="px-space-md py-space-sm"><div class="px-space-sm py-space-xs text-outline uppercase font-label-mono-xs text-label-mono-xs tracking-wider">Enterprise Navigation</div></div><nav class="flex-1 overflow-y-auto px-space-md space-y-1" data-active-classes="bg-primary-container text-on-primary-container font-medium rounded-xl shadow-sm"><a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-sm transition-colors bg-primary-container text-on-primary-container font-medium rounded-xl shadow-sm" data-path="overview" href="#"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Overview</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl text-outline-variant hover:bg-surface-variant/10 hover:text-inverse-on-surface transition-colors font-body-sm text-body-sm" data-path="companies" href="#"><span class="material-symbols-outlined text-[18px]">domain</span><span>Companies</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl text-outline-variant hover:bg-surface-variant/10 hover:text-inverse-on-surface transition-colors font-body-sm text-body-sm" data-path="company-administrators" href="#"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Company Administrators</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl text-outline-variant hover:bg-surface-variant/10 hover:text-inverse-on-surface transition-colors font-body-sm text-body-sm" data-path="platform-users" href="#"><span class="material-symbols-outlined text-[18px]">group</span><span>Platform Users</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl text-outline-variant hover:bg-surface-variant/10 hover:text-inverse-on-surface transition-colors font-body-sm text-body-sm" data-path="global-audit-logs" href="#"><span class="material-symbols-outlined text-[18px]">receipt_long</span><span>Global Audit Logs</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl text-outline-variant hover:bg-surface-variant/10 hover:text-inverse-on-surface transition-colors font-body-sm text-body-sm" data-path="security-and-access" href="#"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>Security &amp; Access</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl text-outline-variant hover:bg-surface-variant/10 hover:text-inverse-on-surface transition-colors font-body-sm text-body-sm" data-path="ai-services-and-system-health" href="#"><span class="material-symbols-outlined text-[18px]">memory</span><span>AI Services &amp; System Health</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl text-outline-variant hover:bg-surface-variant/10 hover:text-inverse-on-surface transition-colors font-body-sm text-body-sm" data-path="platform-settings" href="#"><span class="material-symbols-outlined text-[18px]">tune</span><span>Platform Settings</span></a></nav></div><div class="p-space-md border-t border-surface-variant/10 space-y-1"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl text-outline-variant hover:bg-surface-variant/10 hover:text-inverse-on-surface transition-colors font-body-sm text-body-sm" data-path="my-profile" href="#"><span class="material-symbols-outlined text-[18px]">account_circle</span><span>My Profile</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-xl text-error-container hover:bg-error/20 hover:text-error transition-colors font-body-sm text-body-sm" data-path="login" href="#"><span class="material-symbols-outlined text-[18px]">logout</span><span>Sign Out</span></a></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-lg flex-1 max-w-xl"><div class="flex items-center gap-space-xs font-label-md text-label-md text-on-surface-variant whitespace-nowrap"><span class="text-primary font-title-md text-title-md font-semibold">Console</span><span class="text-outline">/</span><span class="text-on-surface font-title-md text-title-md font-semibold capitalize">Super Admin</span></div><div class="relative w-full max-w-md hidden md:block"><div class="absolute inset-y-0 left-0 pl-space-sm flex items-center pointer-events-none"><span class="material-symbols-outlined text-outline text-[18px]">search</span></div><input class="w-full h-9 pl-8 pr-12 bg-surface-container-low rounded-lg text-on-surface placeholder:text-outline font-label-mono-xs text-label-mono-xs focus:outline-none focus:ring-1 focus:ring-primary shadow-none" placeholder="Search tenants, logs, users, services..." type="text"/><div class="absolute inset-y-0 right-0 pr-space-xs flex items-center pointer-events-none"><kbd class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-mono-xs text-[10px]">⌘K</kbd></div></div></div><div class="flex items-center gap-space-lg"><button class="relative p-space-sm rounded-lg hover:bg-surface-container-high transition-colors text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error"></span></button><div class="flex items-center gap-space-md pl-space-md border-l border-surface-container-high"><div class="flex flex-col text-right"><div class="flex items-center justify-end gap-1.5"><span class="font-label-md text-label-md text-on-surface font-semibold">Root Ops</span><span class="bg-error-container text-on-error-container font-label-mono-xs text-[10px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider">SUPER ADMIN</span></div><span class="font-label-mono-xs text-label-mono-xs text-outline">Platform Root</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-background flex-1 px-space-lg py-space-lg"><div class="flex flex-col w-full">
+<!-- Security Notice Banner -->
+<div class="mb-space-lg rounded-xl bg-surface-container-low p-space-md shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-md">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-label-mono-xs text-label-mono-xs uppercase tracking-wider text-primary font-semibold">Security Protocol Alpha</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface">
+<strong>MULTI-TENANT ISOLATION ACTIVE:</strong> Cross-tenant data boundaries strictly enforced via cryptographic workspace partitioning and zero-trust memory segmentation.
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<span class="font-label-mono-xs text-label-mono-xs text-outline px-2 py-1 rounded bg-surface-container-high">ENCLAVE: SEC-HYP-04</span>
+<span class="font-label-mono-xs text-label-mono-xs text-primary bg-primary-fixed px-2 py-1 rounded font-medium">TIER 1 FEDERATED</span>
+</div>
+</div>
+</div>
+<!-- Operational Header Strip -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-space-lg gap-space-md">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-label-mono-xs text-label-mono-xs text-outline uppercase tracking-widest">Autonomous Industrial AI Fabric</span>
+<span class="font-label-mono-xs text-label-mono-xs text-on-surface-variant">• Region us-east-core</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface font-bold tracking-tight">Root Operational Governance</h1>
+</div>
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-lowest shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="font-label-mono-xs text-label-mono-xs text-on-surface-variant">Live Heartbeat:</span>
+<span class="font-label-mono-xs text-label-mono-xs font-semibold text-primary" id="live-timer">00:00:00 UTC</span>
+</div>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-variant text-on-surface font-body-sm text-body-sm transition-colors">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+<span>Audit Snapshot</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary font-body-sm text-body-sm shadow hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">domain_add</span>
+<span>Provision Tenant</span>
+</button>
+</div>
+</div>
+<!-- KPI Top Metrics Grid (6 Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-space-md mb-space-lg">
+<!-- Card 1 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between hover:shadow transition-shadow">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline">Registered</span>
+<span class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[16px]">domain</span>
+</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface font-bold leading-none mb-1">48</div>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center font-label-mono-xs text-label-mono-xs px-1.5 py-0.5 rounded bg-primary-fixed text-primary font-medium">↑ +4</span>
+<span class="font-caption-xs text-caption-xs text-outline">This monthly cycle</span>
+</div>
+</div>
+<div class="w-full bg-surface-container mt-space-sm h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[78%]"></div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between hover:shadow transition-shadow">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline">Active Tenants</span>
+<span class="w-7 h-7 rounded-lg bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface font-bold leading-none mb-1">42</div>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center font-label-mono-xs text-label-mono-xs px-1.5 py-0.5 rounded bg-secondary-fixed-dim text-on-secondary-fixed-variant font-medium">87.5%</span>
+<span class="font-caption-xs text-caption-xs text-outline">Operational state</span>
+</div>
+</div>
+<div class="w-full bg-surface-container mt-space-sm h-1 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[87.5%]"></div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between hover:shadow transition-shadow">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline">Suspended</span>
+<span class="w-7 h-7 rounded-lg bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-[16px]">lock_clock</span>
+</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-error font-bold leading-none mb-1">6</div>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center font-label-mono-xs text-label-mono-xs px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-semibold">ACTION REQ</span>
+<span class="font-caption-xs text-caption-xs text-outline">Audit flagged</span>
+</div>
+</div>
+<div class="w-full bg-surface-container mt-space-sm h-1 rounded-full overflow-hidden">
+<div class="bg-error h-full w-[12.5%]"></div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between hover:shadow transition-shadow">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline">Platform Users</span>
+<span class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface font-bold leading-none mb-1">3,420</div>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center font-label-mono-xs text-label-mono-xs px-1.5 py-0.5 rounded bg-primary-fixed text-primary font-medium">↑ +18%</span>
+<span class="font-caption-xs text-caption-xs text-outline">MoM velocity</span>
+</div>
+</div>
+<div class="w-full bg-surface-container mt-space-sm h-1 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full w-[65%]"></div>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between hover:shadow transition-shadow">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline">Docs Indexed</span>
+<span class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[16px]">menu_book</span>
+</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-on-surface font-bold leading-none mb-1">184.5k</div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-mono-xs text-label-mono-xs text-outline font-semibold">184,520</span>
+<span class="font-caption-xs text-caption-xs text-outline">SOPs &amp; manuals</span>
+</div>
+</div>
+<div class="w-full bg-surface-container mt-space-sm h-1 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[91%]"></div>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between hover:shadow transition-shadow">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline">RAG Invocations</span>
+<span class="w-7 h-7 rounded-lg bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">neurology</span>
+</span>
+</div>
+<div>
+<div class="font-display-lg text-display-lg text-primary font-bold leading-none mb-1">1.28M</div>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center font-label-mono-xs text-label-mono-xs px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-medium">214ms</span>
+<span class="font-caption-xs text-caption-xs text-outline">Avg p95 latency</span>
+</div>
+</div>
+<div class="w-full bg-surface-container mt-space-sm h-1 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full w-[84%]"></div>
+</div>
+</div>
+</div>
+<!-- Real-time Infrastructure & AI Services Health Bar -->
+<div class="mb-space-lg p-space-md rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between pb-space-sm mb-space-sm border-b border-surface-container gap-2">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[20px]">hub</span>
+<span class="font-title-md text-title-md text-on-surface font-semibold">Core Mesh &amp; Intelligence Telemetry</span>
+<span class="font-label-mono-xs text-label-mono-xs px-2 py-0.5 rounded bg-surface-container-high text-outline">ORCHESTRATOR CLUSTER</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-mono-xs text-label-mono-xs text-outline" id="health-timestamp">Verified 42s ago</span>
+<button class="flex items-center gap-1 font-label-mono-xs text-label-mono-xs px-2.5 py-1 rounded bg-surface-container hover:bg-surface-variant text-on-surface transition-all" id="refresh-health-btn">
+<span class="material-symbols-outlined text-[14px]">refresh</span>
+<span>Refresh Status</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-space-sm">
+<!-- Node 1 -->
+<div class="p-2.5 rounded-lg bg-surface-container-low flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-mono-xs text-label-mono-xs font-semibold text-on-surface">FastAPI Cluster</span>
+<span class="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-surface-container-lowest text-primary font-label-mono-xs text-[10px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> 99.98%
+          </span>
+</div>
+<div class="flex items-center justify-between text-outline font-caption-xs text-caption-xs">
+<span>Latency: 18ms</span>
+<span class="font-label-mono-xs text-[10px] text-primary">HEALTHY</span>
+</div>
+</div>
+<!-- Node 2 -->
+<div class="p-2.5 rounded-lg bg-surface-container-low flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-mono-xs text-label-mono-xs font-semibold text-on-surface">MongoDB Replica</span>
+<span class="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-surface-container-lowest text-primary font-label-mono-xs text-[10px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> 84/100 pool
+          </span>
+</div>
+<div class="flex items-center justify-between text-outline font-caption-xs text-caption-xs">
+<span>Latency: 4ms</span>
+<span class="font-label-mono-xs text-[10px] text-primary">HEALTHY</span>
+</div>
+</div>
+<!-- Node 3 -->
+<div class="p-2.5 rounded-lg bg-surface-container-low flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-mono-xs text-label-mono-xs font-semibold text-on-surface">ChromaDB Cluster</span>
+<span class="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-surface-container-lowest text-primary font-label-mono-xs text-[10px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> 184k vectors
+          </span>
+</div>
+<div class="flex items-center justify-between text-outline font-caption-xs text-caption-xs">
+<span>p99: 92ms</span>
+<span class="font-label-mono-xs text-[10px] text-primary">HEALTHY</span>
+</div>
+</div>
+<!-- Node 4 (Degraded) -->
+<div class="p-2.5 rounded-lg bg-error-container/20 flex flex-col justify-between border-l-2 border-error">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-mono-xs text-label-mono-xs font-semibold text-on-surface">GPU Worker A100</span>
+<span class="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-mono-xs text-[10px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span> 89% RAM
+          </span>
+</div>
+<div class="flex items-center justify-between text-outline font-caption-xs text-caption-xs">
+<span class="text-error font-medium">Scale queued</span>
+<span class="font-label-mono-xs text-[10px] font-bold text-error">DEGRADED</span>
+</div>
+</div>
+<!-- Node 5 -->
+<div class="p-2.5 rounded-lg bg-surface-container-low flex flex-col justify-between">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-mono-xs text-label-mono-xs font-semibold text-on-surface">Doc Pipeline</span>
+<span class="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-surface-container-lowest text-primary font-label-mono-xs text-[10px] font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> 0 dead-letter
+          </span>
+</div>
+<div class="flex items-center justify-between text-outline font-caption-xs text-caption-xs">
+<span>Workers: 12 active</span>
+<span class="font-label-mono-xs text-[10px] text-primary">HEALTHY</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Analytics Visualizations (Two Columns) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg mb-space-lg">
+<!-- Chart 1: Company Growth & Distribution -->
+<div class="lg:col-span-6 p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<div class="font-label-mono-xs text-label-mono-xs text-outline uppercase tracking-wider">Tenant Partitioning</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">Tenant Scale Trajectory (6 Months)</h2>
+</div>
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded bg-primary"></span>
+<span class="font-caption-xs text-caption-xs text-outline">Active</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded bg-error"></span>
+<span class="font-caption-xs text-caption-xs text-outline">Suspended</span>
+</div>
+</div>
+</div>
+<!-- Custom SVG Chart: Grouped Bars + Trend Curve -->
+<div class="relative w-full h-64 flex items-end justify-between px-2 pt-6">
+<!-- SVG Grid & Backdrop lines -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" preserveaspectratio="none" viewbox="0 0 500 200">
+<line class="text-surface-container-high" stroke="currentColor" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="40" y2="40"></line>
+<line class="text-surface-container-high" stroke="currentColor" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="90" y2="90"></line>
+<line class="text-surface-container-high" stroke="currentColor" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="140" y2="140"></line>
+<!-- Smooth Line indicating Total Tenant Capacity -->
+<path class="text-secondary" d="M 40 165 C 100 150, 150 135, 200 120 C 250 110, 310 95, 360 70 C 410 50, 450 38, 480 30" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"></path>
+</svg>
+<!-- Bar Month 1 (May) -->
+<div class="flex flex-col items-center gap-1 z-10 w-1/6 group cursor-pointer">
+<span class="font-label-mono-xs text-label-mono-xs text-outline group-hover:text-primary">26</span>
+<div class="w-8 flex flex-col justify-end h-36 bg-surface-container-low rounded-t overflow-hidden">
+<div class="bg-primary w-full h-[75%] rounded-t-sm transition-all group-hover:brightness-110"></div>
+<div class="bg-error w-full h-[15%]"></div>
+</div>
+<span class="font-caption-xs text-caption-xs text-on-surface-variant mt-1">MAY</span>
+</div>
+<!-- Bar Month 2 (Jun) -->
+<div class="flex flex-col items-center gap-1 z-10 w-1/6 group cursor-pointer">
+<span class="font-label-mono-xs text-label-mono-xs text-outline group-hover:text-primary">31</span>
+<div class="w-8 flex flex-col justify-end h-36 bg-surface-container-low rounded-t overflow-hidden">
+<div class="bg-primary w-full h-[80%] rounded-t-sm transition-all group-hover:brightness-110"></div>
+<div class="bg-error w-full h-[12%]"></div>
+</div>
+<span class="font-caption-xs text-caption-xs text-on-surface-variant mt-1">JUN</span>
+</div>
+<!-- Bar Month 3 (Jul) -->
+<div class="flex flex-col items-center gap-1 z-10 w-1/6 group cursor-pointer">
+<span class="font-label-mono-xs text-label-mono-xs text-outline group-hover:text-primary">35</span>
+<div class="w-8 flex flex-col justify-end h-36 bg-surface-container-low rounded-t overflow-hidden">
+<div class="bg-primary w-full h-[85%] rounded-t-sm transition-all group-hover:brightness-110"></div>
+<div class="bg-error w-full h-[10%]"></div>
+</div>
+<span class="font-caption-xs text-caption-xs text-on-surface-variant mt-1">JUL</span>
+</div>
+<!-- Bar Month 4 (Aug) -->
+<div class="flex flex-col items-center gap-1 z-10 w-1/6 group cursor-pointer">
+<span class="font-label-mono-xs text-label-mono-xs text-outline group-hover:text-primary">40</span>
+<div class="w-8 flex flex-col justify-end h-36 bg-surface-container-low rounded-t overflow-hidden">
+<div class="bg-primary w-full h-[88%] rounded-t-sm transition-all group-hover:brightness-110"></div>
+<div class="bg-error w-full h-[12%]"></div>
+</div>
+<span class="font-caption-xs text-caption-xs text-on-surface-variant mt-1">AUG</span>
+</div>
+<!-- Bar Month 5 (Sep) -->
+<div class="flex flex-col items-center gap-1 z-10 w-1/6 group cursor-pointer">
+<span class="font-label-mono-xs text-label-mono-xs text-outline group-hover:text-primary">44</span>
+<div class="w-8 flex flex-col justify-end h-36 bg-surface-container-low rounded-t overflow-hidden">
+<div class="bg-primary w-full h-[90%] rounded-t-sm transition-all group-hover:brightness-110"></div>
+<div class="bg-error w-full h-[10%]"></div>
+</div>
+<span class="font-caption-xs text-caption-xs text-on-surface-variant mt-1">SEP</span>
+</div>
+<!-- Bar Month 6 (Oct - Current) -->
+<div class="flex flex-col items-center gap-1 z-10 w-1/6 group cursor-pointer">
+<span class="font-label-mono-xs text-label-mono-xs font-bold text-primary">48</span>
+<div class="w-8 flex flex-col justify-end h-36 bg-surface-container-low rounded-t overflow-hidden ring-2 ring-primary/20">
+<div class="bg-primary w-full h-[87.5%] rounded-t-sm transition-all group-hover:brightness-110"></div>
+<div class="bg-error w-full h-[12.5%]"></div>
+</div>
+<span class="font-caption-xs text-caption-xs font-bold text-primary mt-1">OCT</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container flex items-center justify-between font-label-mono-xs text-label-mono-xs text-outline">
+<span>Capacity Target: 60 Tenants</span>
+<span class="text-on-surface font-medium">80.0% Allocation Reached</span>
+</div>
+</div>
+<!-- Chart 2: Platform Activity & Ingestion -->
+<div class="lg:col-span-6 p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<div class="font-label-mono-xs text-label-mono-xs text-outline uppercase tracking-wider">Semantic Query vs Embeddings</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">Dual-Axis Throughput Pulse</h2>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<span class="font-caption-xs text-caption-xs text-outline">RAG Queries (k)</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+<span class="font-caption-xs text-caption-xs text-outline">Docs Indexed (k)</span>
+</div>
+</div>
+</div>
+<!-- Dual Area/Curve SVG Chart -->
+<div class="relative w-full h-64 pt-2">
+<svg class="w-full h-48 overflow-visible" preserveaspectratio="none" viewbox="0 0 500 180">
+<defs>
+<lineargradient id="ragGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#004ac6" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#004ac6" stop-opacity="0.0"></stop>
+</lineargradient>
+<lineargradient id="docGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#4c546f" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#4c546f" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Horizontal reference lines -->
+<line class="text-surface-container-high" stroke="currentColor" stroke-dasharray="2,2" stroke-width="1" x1="0" x2="500" y1="30" y2="30"></line>
+<line class="text-surface-container-high" stroke="currentColor" stroke-dasharray="2,2" stroke-width="1" x1="0" x2="500" y1="80" y2="80"></line>
+<line class="text-surface-container-high" stroke="currentColor" stroke-dasharray="2,2" stroke-width="1" x1="0" x2="500" y1="130" y2="130"></line>
+<!-- Area 1: Docs Indexed -->
+<polygon fill="url(#docGradient)" points="0,170 0,140 70,135 140,110 210,120 280,95 350,80 420,70 500,55 500,170"></polygon>
+<polyline class="text-tertiary" fill="none" points="0,140 70,135 140,110 210,120 280,95 350,80 420,70 500,55" stroke="currentColor" stroke-width="2"></polyline>
+<!-- Area 2: RAG Queries -->
+<polygon fill="url(#ragGradient)" points="0,170 0,110 70,95 140,75 210,65 280,85 350,45 420,35 500,20 500,170"></polygon>
+<polyline class="text-primary" fill="none" points="0,110 70,95 140,75 210,65 280,85 350,45 420,35 500,20" stroke="currentColor" stroke-width="2.5"></polyline>
+<!-- Accent Nodes -->
+<circle class="fill-surface-container-lowest stroke-primary stroke-2" cx="350" cy="45" r="4"></circle>
+<circle class="fill-primary stroke-surface-container-lowest stroke-2" cx="500" cy="20" r="4"></circle>
+<circle class="fill-surface-container-lowest stroke-tertiary stroke-2" cx="420" cy="70" r="3.5"></circle>
+</svg>
+<div class="flex justify-between items-center px-1 font-caption-xs text-caption-xs text-outline mt-2">
+<span>00:00</span>
+<span>04:00</span>
+<span>08:00</span>
+<span>12:00</span>
+<span>16:00</span>
+<span>20:00</span>
+<span class="font-bold text-on-surface">NOW</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container flex items-center justify-between font-label-mono-xs text-label-mono-xs">
+<span class="text-outline">Peak RAG Rate: <strong class="text-on-surface">2,420 req/min</strong></span>
+<span class="text-outline">Vector Indexing: <strong class="text-tertiary">342 chunks/sec</strong></span>
+</div>
+</div>
+</div>
+<!-- Lower Split Panels: Registrations Table + Security Events -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg mb-space-lg">
+<!-- Panel 1: Recent Company Registrations Table (8 cols) -->
+<div class="xl:col-span-8 p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-space-md gap-space-sm">
+<div>
+<div class="font-label-mono-xs text-label-mono-xs text-outline uppercase tracking-wider">Tenant Directory</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">Recent Company Registrations</h2>
+</div>
+<div class="flex items-center gap-space-sm">
+<div class="relative">
+<input class="h-8 pl-7 pr-3 rounded-lg bg-surface-container-low text-on-surface text-body-sm font-body-sm placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary w-44" placeholder="Filter companies..." type="text"/>
+<span class="material-symbols-outlined text-[16px] text-outline absolute left-2 top-2">filter_alt</span>
+</div>
+<a class="font-label-mono-xs text-label-mono-xs text-primary hover:underline px-2 py-1" data-path="companies" href="#">View All (48) →</a>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-surface-container font-label-mono-xs text-label-mono-xs text-outline uppercase">
+<th class="py-2.5 px-3">Company Name</th>
+<th class="py-2.5 px-3">Slug / Tenant ID</th>
+<th class="py-2.5 px-3">Reg Date</th>
+<th class="py-2.5 px-3 text-right">Users</th>
+<th class="py-2.5 px-3 text-right">Documents</th>
+<th class="py-2.5 px-3 text-center">Status</th>
+<th class="py-2.5 px-3 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container font-body-sm text-body-sm text-on-surface">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-3 font-semibold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-primary-fixed text-primary flex items-center justify-center font-bold text-[11px]">AI</span>
+<span>APEX Industrial</span>
+</div>
+</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-outline">
+                  apex-ind <span class="text-tertiary">#CMP-8821</span>
+</td>
+<td class="py-3 px-3 font-label-mono-xs text-label-mono-xs text-on-surface-variant">Oct 14, 2024</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-right font-medium">640</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-right text-outline">42,100</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center gap-1 font-label-mono-xs text-label-mono-xs px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> ACTIVE
+                  </span>
+</td>
+<td class="py-3 px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-2 py-1 rounded hover:bg-surface-container font-label-mono-xs text-label-mono-xs text-primary font-medium">Details</button>
+<button class="px-2 py-1 rounded hover:bg-surface-container font-label-mono-xs text-label-mono-xs text-outline">Audit</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-3 font-semibold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-surface-container-high text-tertiary flex items-center justify-center font-bold text-[11px]">NM</span>
+<span>NOVA Manufacturing</span>
+</div>
+</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-outline">
+                  nova-mfg <span class="text-tertiary">#CMP-7410</span>
+</td>
+<td class="py-3 px-3 font-label-mono-xs text-label-mono-xs text-on-surface-variant">Oct 11, 2024</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-right font-medium">310</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-right text-outline">18,940</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center gap-1 font-label-mono-xs text-label-mono-xs px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> ACTIVE
+                  </span>
+</td>
+<td class="py-3 px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-2 py-1 rounded hover:bg-surface-container font-label-mono-xs text-label-mono-xs text-primary font-medium">Details</button>
+<button class="px-2 py-1 rounded hover:bg-surface-container font-label-mono-xs text-label-mono-xs text-outline">Audit</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-3 font-semibold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-primary-fixed text-primary flex items-center justify-center font-bold text-[11px]">VE</span>
+<span>VERTEX Engineering</span>
+</div>
+</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-outline">
+                  vertex-eng <span class="text-tertiary">#CMP-9042</span>
+</td>
+<td class="py-3 px-3 font-label-mono-xs text-label-mono-xs text-on-surface-variant">Oct 08, 2024</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-right font-medium">890</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-right text-outline">64,200</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center gap-1 font-label-mono-xs text-label-mono-xs px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span> ACTIVE
+                  </span>
+</td>
+<td class="py-3 px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-2 py-1 rounded hover:bg-surface-container font-label-mono-xs text-label-mono-xs text-primary font-medium">Details</button>
+<button class="px-2 py-1 rounded hover:bg-surface-container font-label-mono-xs text-label-mono-xs text-outline">Audit</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 (Suspended) -->
+<tr class="bg-error-container/10 hover:bg-error-container/20 transition-colors">
+<td class="py-3 px-3 font-semibold text-on-surface">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded bg-error-container text-on-error-container flex items-center justify-center font-bold text-[11px]">TR</span>
+<span>Titan Robotics Corp</span>
+</div>
+</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-outline">
+                  titan-robotics <span class="text-tertiary">#CMP-6102</span>
+</td>
+<td class="py-3 px-3 font-label-mono-xs text-label-mono-xs text-on-surface-variant">Sep 28, 2024</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-right font-medium text-error">120</td>
+<td class="py-3 px-3 font-label-mono-sm text-label-mono-sm text-right text-outline">8,400</td>
+<td class="py-3 px-3 text-center">
+<span class="inline-flex items-center gap-1 font-label-mono-xs text-label-mono-xs px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-bold">
+<span class="material-symbols-outlined text-[12px]">lock</span> SUSPENDED
+                  </span>
+</td>
+<td class="py-3 px-3 text-right">
+<div class="flex items-center justify-end gap-1">
+<button class="px-2 py-1 rounded bg-error-container hover:bg-error/20 font-label-mono-xs text-label-mono-xs text-on-error-container font-semibold">Review Suspension</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="pt-space-md border-t border-surface-container flex items-center justify-between">
+<span class="font-caption-xs text-caption-xs text-outline">Showing 4 of 48 total tenants</span>
+<div class="flex items-center gap-1">
+<button class="px-2 py-1 rounded text-outline hover:text-on-surface font-label-mono-xs text-label-mono-xs">Prev</button>
+<span class="px-2 py-1 rounded bg-surface-container font-label-mono-xs text-label-mono-xs font-semibold text-on-surface">1</span>
+<button class="px-2 py-1 rounded text-outline hover:text-on-surface font-label-mono-xs text-label-mono-xs">Next</button>
+</div>
+</div>
+</div>
+<!-- Panel 2: Recent Security Events Log Widget (4 cols) -->
+<div class="xl:col-span-4 p-space-lg rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between pb-space-md">
+<div>
+<div class="font-label-mono-xs text-label-mono-xs text-outline uppercase tracking-wider">Zero Trust Guard</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-semibold">Global Audit Events</h2>
+</div>
+<span class="w-2.5 h-2.5 rounded-full bg-error animate-pulse" title="Live stream listening"></span>
+</div>
+<div class="space-y-space-sm">
+<!-- Event 1: 403 Access Denied -->
+<div class="p-3 rounded-lg bg-surface-container-low border-l-2 border-error hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-mono-xs text-label-mono-xs font-bold text-error">403 ACCESS DENIED</span>
+<span class="font-caption-xs text-caption-xs text-outline">3m ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mb-1.5 leading-snug">
+              Repeated unauthorized attempt from <code class="px-1 py-0.5 rounded bg-surface-container font-label-mono-xs text-[11px] text-on-surface">194.67.210.12</code> targeting tenant <strong>NOVA Manufacturing</strong>.
+            </p>
+<div class="flex items-center justify-between font-label-mono-xs text-[10px] text-outline">
+<span>TENANT_ISOLATION_POL</span>
+<span class="text-error font-semibold">BLOCK ENFORCED</span>
+</div>
+</div>
+<!-- Event 2: Elevation session -->
+<div class="p-3 rounded-lg bg-surface-container-low border-l-2 border-primary hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-mono-xs text-label-mono-xs font-bold text-primary">PRIVILEGE ELEVATION</span>
+<span class="font-caption-xs text-caption-xs text-outline">18m ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mb-1.5 leading-snug">
+              Super Admin root shell session initialized by <code class="px-1 py-0.5 rounded bg-surface-container font-label-mono-xs text-[11px] text-on-surface">admin@insightx.internal</code>.
+            </p>
+<div class="flex items-center justify-between font-label-mono-xs text-[10px] text-outline">
+<span>MFA_U2F_TOKEN_VERIFIED</span>
+<span class="text-primary font-semibold">SESSION #8911</span>
+</div>
+</div>
+<!-- Event 3: Company Suspension -->
+<div class="p-3 rounded-lg bg-surface-container-low border-l-2 border-outline hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-mono-xs text-label-mono-xs font-bold text-outline">TENANT SUSPENSION</span>
+<span class="font-caption-xs text-caption-xs text-outline">44m ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mb-1.5 leading-snug">
+              Tenant suspension executed for <strong>Titan Robotics Corp</strong> due to overdue compliance documentation audit.
+            </p>
+<div class="flex items-center justify-between font-label-mono-xs text-[10px] text-outline">
+<span>TRIGGER: SEC_COMPLIANCE_CRON</span>
+<span class="text-on-surface font-semibold">ENFORCED</span>
+</div>
+</div>
+<!-- Event 4: Login Spike -->
+<div class="p-3 rounded-lg bg-surface-container-low border-l-2 border-error hover:bg-surface-container transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-mono-xs text-label-mono-xs font-bold text-error">BRUTE-FORCE ANOMALY</span>
+<span class="font-caption-xs text-caption-xs text-outline">1h ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface mb-1.5 leading-snug">
+              Failed login spike (14 attempts in 30s) on admin account at <strong>APEX Industrial</strong>.
+            </p>
+<div class="flex items-center justify-between font-label-mono-xs text-[10px] text-outline">
+<span>RATE_LIMIT_EXCEEDED</span>
+<span class="text-error font-semibold">CAPTCHA_LOCKED</span>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-space-md border-t border-surface-container mt-space-sm flex items-center justify-between">
+<span class="font-caption-xs text-caption-xs text-outline">Ingestion stream active</span>
+<a class="font-label-mono-xs text-label-mono-xs text-primary hover:underline" data-path="global-audit-logs" href="#">Full Audit Trail →</a>
+</div>
+</div>
+</div>
+<!-- Operational Footer Metrics -->
+<div class="rounded-xl bg-surface-container-low p-space-md text-on-surface-variant flex flex-col md:flex-row items-center justify-between gap-space-md text-body-sm font-body-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[18px] text-outline">terminal</span>
+<span class="font-label-mono-xs text-label-mono-xs text-outline">INSIGHTX v4.8.2-enterprise • SHA: 7f3b890a • DB Schema v19</span>
+</div>
+<div class="flex items-center gap-space-md font-label-mono-xs text-label-mono-xs">
+<span class="flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+        Zero Data Leaks Recorded
+      </span>
+<span>•</span>
+<span class="text-outline">RPO: 0ms | RTO: &lt; 2.4s</span>
+</div>
+</div>
+</div>
+<script>
+  // Live Heartbeat Clock
+  function updateLiveClock() {
+    const el = document.getElementById('live-timer');
+    if (!el) return;
+    const now = new Date();
+    const utcHours = String(now.getUTCHours()).padStart(2, '0');
+    const utcMinutes = String(now.getUTCMinutes()).padStart(2, '0');
+    const utcSeconds = String(now.getUTCSeconds()).padStart(2, '0');
+    el.textContent = `${utcHours}:${utcMinutes}:${utcSeconds} UTC`;
+  }
+  setInterval(updateLiveClock, 1000);
+  updateLiveClock();
+
+  // Interactive Health Refresh Button
+  const refreshBtn = document.getElementById('refresh-health-btn');
+  const healthTimestamp = document.getElementById('health-timestamp');
+  if (refreshBtn && healthTimestamp) {
+    refreshBtn.addEventListener('click', function() {
+      refreshBtn.disabled = true;
+      refreshBtn.classList.add('opacity-50');
+      healthTimestamp.textContent = 'Verifying cluster mesh...';
+      setTimeout(() => {
+        healthTimestamp.textContent = 'Verified just now';
+        refreshBtn.disabled = false;
+        refreshBtn.classList.remove('opacity-50');
+      }, 600);
+    });
+  }
+</script></main></div></body></html>

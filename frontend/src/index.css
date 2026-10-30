@@ -1502,5 +1502,272 @@ button {
   }
 }
 
+/* ── File Upload & OCR Drag Zone Styles ── */
+.upload-dropzone-container {
+  background: #111a2e;
+  border: 2px dashed #2563eb;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 24px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
 
+.upload-dropzone-container:hover, .upload-dropzone-container.drag-over {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: #38bdf8;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+}
 
+.upload-icon-large {
+  font-size: 36px;
+  margin-bottom: 8px;
+}
+
+.upload-limits-badge-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.ocr-feature-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.limit-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.selected-files-preview {
+  margin-top: 16px;
+  background: #0b1120;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: left;
+}
+
+.file-preview-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 13px;
+}
+
+.file-preview-item:last-child {
+  border-bottom: none;
+}
+
+/* ── Persistent Chat Session Sidebar ── */
+.rag-layout-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .rag-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chat-sessions-sidebar {
+  background: #0f172a;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+}
+
+.sessions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sessions-list-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.session-item-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.session-item-btn:hover {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.session-item-btn.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.session-title-truncated {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.session-delete-mini-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.session-delete-mini-btn:hover {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* ── Permission Selector Grid (Role Modal) ── */
+.permission-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.permission-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: background 0.15s ease;
+}
+
+.permission-checkbox-label:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: #c7d2fe;
+}
+
+.permission-checkbox-label input[type="checkbox"] {
+  accent-color: #6366f1;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+/* ── Selected Files Preview (Upload Zone) ── */
+.selected-files-preview {
+  margin-top: 14px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(99, 102, 241, 0.12);
+}
+
+.file-preview-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #cbd5e1;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.file-preview-item:last-child {
+  border-bottom: none;
+}
+
+/* ── Organization Sub-Tabs ── */
+.org-subtabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  padding-bottom: 0;
+}
+
+.org-subtab-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.org-subtab-btn:hover {
+  color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.06);
+}
+
+.org-subtab-btn.active {
+  color: #818cf8;
+  border-bottom-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+}
+
+/* ── Permission Chips (Roles Table) ── */
+.permission-chips {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}

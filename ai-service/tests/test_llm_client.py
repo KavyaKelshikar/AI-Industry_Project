@@ -63,3 +63,18 @@ def test_get_llm_client_factory():
     client = get_llm_client(force_deterministic=True)
     assert isinstance(client, DeterministicGroundingLLMClient)
     assert client.is_available()
+
+
+def test_gemini_model_configuration(monkeypatch):
+    """Verify Gemini client respects configured model name and fallback to Settings."""
+    from src.config import settings
+
+    # Default should match settings.GEMINI_MODEL
+    client_default = GeminiLLMClient(api_key="test-key")
+    assert client_default.model_name == settings.GEMINI_MODEL
+    assert "gemini-3.5-flash" in client_default.provider_name
+
+    # Explicit model should override settings
+    client_custom = GeminiLLMClient(api_key="test-key", model_name="custom-gemini-model")
+    assert client_custom.model_name == "custom-gemini-model"
+    assert "custom-gemini-model" in client_custom.provider_name

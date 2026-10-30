@@ -299,6 +299,81 @@ class DocumentProcessingService {
       updatedAt: doc.updatedAt,
     };
   }
+
+  /**
+   * Upload and register new document files with validation and tenant quota checks.
+   */
+  async uploadDocuments(files, metadata = {}, scope, user) {
+    if (!files || files.length === 0) {
+      throw new AppError(400, 'No files provided for upload', true, errorCodes.INVALID_INPUT);
+    }
+
+    const Company = require('../models/Company');
+    const AuditLog = require('../models/AuditLog');
+
+    // Tenant Quota Checks
+    if (scope && scope.companyId) {
+      const company = await Company.findById(scope.companyId);
+      if (company && company.settings?.maxDocuments) {
+        const currentCount = await DocumentRepository.count({ companyId: scope.companyId }, scope);
+        if (currentCount + files.length > company.settings.maxDocuments) {
+          throw new AppError(
+            400,
+            `Company document limit reached. Maximum allowed: ${company.settings.maxDocuments}`,
+            true,
+            'DOCUMENT_QUOTA_EXCEEDED'
+          );
+        }
+      }
+    }
+
+    const createdDocs = [];
+    for (const file of files) {
+      const fileBuffer = fs.readFileSync(file.path);
+      const hash = crypto.createHash('sha256').update(fileBuffer).digest('hex');
+      const ext = path.extname(file.originalname).replace(/^\./, '').toLowerCase();
+
+      const docPayload = {
+        companyId: scope.companyId,
+        uploadedBy: user.id || user._id,
+        filename: file.filename,
+        originalFilename: file.originalname,
+        fileType: ext,
+        fileSize: file.size,
+        storagePath: file.path,
+        sourceType: 'application_upload',
+        sourceFileHash: hash,
+        indexingStatus: 'pending',
+        status: 'pending',
+        classification: metadata.classification || 'internal',
+        category: metadata.category || 'General',
+        departmentIds: metadata.departmentId ? [metadata.departmentId] : (user.departmentId ? [user.departmentId] : []),
+        tags: Array.isArray(metadata.tags)
+          ? metadata.tags
+          : metadata.tags
+          ? metadata.tags.split(',').map((t) => t.trim())
+          : [],
+      };
+
+      const newDoc = await DocumentRepository.create(docPayload, scope);
+      createdDocs.push(this._formatDocumentResponse(newDoc));
+
+      try {
+        await AuditLog.create({
+          companyId: scope.companyId,
+          userId: user.id || user._id,
+          action: 'DOCUMENT_UPLOAD',
+          resourceType: 'Document',
+          resourceId: newDoc._id,
+          details: { filename: file.originalname, size: file.size, hash },
+        });
+      } catch (auditErr) {
+        logger.error('Failed to write upload audit log: %s', auditErr.message);
+      }
+    }
+
+    return createdDocs;
+  }
 }
 
 module.exports = new DocumentProcessingService();
