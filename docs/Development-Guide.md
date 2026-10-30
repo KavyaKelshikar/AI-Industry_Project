@@ -36,7 +36,7 @@ npm run dev
 powershell -ExecutionPolicy Bypass -File .\start-dev.ps1
 ```
 This script:
-1. Verifies Docker and boots MongoDB (`localhost:27017`) and ChromaDB (`localhost:8000`).
+1. Verifies Docker and boots MongoDB (`localhost:27017`) and ChromaDB (`localhost:8000`). If Docker is offline, the backend automatically falls back to an embedded development MongoMemoryServer and the AI service falls back to local PersistentClient (`./chroma_data`).
 2. Launches Python AI Service FastAPI on `http://localhost:8002`.
 3. Launches Node.js Express Backend on `http://localhost:5000`.
 4. Launches React Vite Frontend on `http://localhost:5173`.

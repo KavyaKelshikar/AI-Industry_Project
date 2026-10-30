@@ -17,25 +17,37 @@ logger = logging.getLogger(__name__)
 _chroma_client: Optional[chromadb.ClientAPI] = None
 
 
-def get_chroma_client() -> chromadb.HttpClient:
+def get_chroma_client() -> chromadb.ClientAPI:
     """
-    Return a singleton ChromaDB HttpClient.
+    Return a singleton ChromaDB client.
 
-    The client is lazily initialised on first call and reused for the
-    lifetime of the process.
+    Connects to remote ChromaDB HttpClient if available; falls back seamlessly
+    to local PersistentClient if remote server is unreachable.
     """
     global _chroma_client
 
     if _chroma_client is None:
-        _chroma_client = chromadb.HttpClient(
-            host=settings.CHROMADB_HOST,
-            port=settings.CHROMADB_PORT,
-        )
-        logger.info(
-            "ChromaDB client configured for %s:%s",
-            settings.CHROMADB_HOST,
-            settings.CHROMADB_PORT,
-        )
+        try:
+            client = chromadb.HttpClient(
+                host=settings.CHROMADB_HOST,
+                port=settings.CHROMADB_PORT,
+            )
+            client.heartbeat()
+            _chroma_client = client
+            logger.info(
+                "ChromaDB HttpClient connected to %s:%s",
+                settings.CHROMADB_HOST,
+                settings.CHROMADB_PORT,
+            )
+        except Exception as exc:
+            logger.warning(
+                "Remote ChromaDB at %s:%s unavailable (%s). Using local PersistentClient.",
+                settings.CHROMADB_HOST,
+                settings.CHROMADB_PORT,
+                exc,
+            )
+            _chroma_client = chromadb.PersistentClient(path="./chroma_data")
+            logger.info("ChromaDB PersistentClient initialized at ./chroma_data")
 
     return _chroma_client
 

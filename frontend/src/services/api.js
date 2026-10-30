@@ -69,7 +69,7 @@ async function request(endpoint, options = {}, isRetry = false) {
           // Retry the original request once with the new access token
           return await request(endpoint, options, true);
         }
-      } catch (refreshErr) {
+      } catch (_refreshErr) {
         clearAccessToken();
       }
     }
@@ -501,6 +501,30 @@ export async function deleteChatSession(id) {
 export async function getAuditLogs(params = {}) {
   const query = new URLSearchParams(params).toString();
   return request(`/audit-logs${query ? `?${query}` : ''}`);
+}
+
+/**
+ * ── Semantic Search API Functions ──
+ */
+
+/**
+ * Execute a semantic search query against the vector knowledge base.
+ * Returns ranked document matches with relevance scores and highlighted snippets.
+ * @param {Object} params - { query: string, top_k?: number, department?: string, fileType?: string, category?: string }
+ */
+export async function semanticSearch(params = {}) {
+  const safePayload = {
+    query: params.query,
+    top_k: params.top_k || 10,
+  };
+  if (params.department) safePayload.departmentId = params.department;
+  if (params.category) safePayload.category = params.category;
+  delete safePayload.companyId;
+  delete safePayload.company_id;
+  return request('/rag/query', {
+    method: 'POST',
+    body: JSON.stringify(safePayload),
+  });
 }
 
 /**

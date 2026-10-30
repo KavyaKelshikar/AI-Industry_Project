@@ -445,3 +445,71 @@ This document provides a precise mapping of every Stitch AI frontend page to the
 
 **Dependencies**
 - `joi` (strict validation for complex nested settings)
+
+---
+
+## 9. Semantic Search Page (stitch_industrial_knowledge_intelligence (6))
+
+↓
+
+**Required APIs**
+- `POST /api/v1/rag/query` (semantic vector search with filters)
+
+↓
+
+**Required Controllers**
+- `RagController`
+
+↓
+
+**Required Services**
+- `RagService` (Vector query orchestration, answer generation)
+
+↓
+
+**Required Repositories**
+- `DocumentRepository`, `KnowledgeSourceRepository`
+
+↓
+
+**Required Models**
+- `Document`, `KnowledgeSource`
+
+↓
+
+**Required AI Service**
+- `/api/query` (ChromaDB vector search + LLM answer generation)
+- Embedding model for query vectorization
+
+↓
+
+**Required Middleware**
+- `authenticate`, `tenantIsolation`
+
+↓
+
+**Database Collections Used**
+- `documents`, `knowledgeSources`
+- ChromaDB vector collections
+
+↓
+
+**Authorization Rules**
+- Requires authenticated user with read access to knowledge base.
+
+↓
+
+**Dependencies**
+- `axios` (AI service communication), ChromaDB client
+
+↓
+
+**Frontend State**
+- `searchQuery`, `searchResults`, `searchLoading`, `searchError`, `searchInsight`
+- Filter state: `searchDeptFilter`, `searchFileTypeFilter`
+
+↓
+
+**Frontend API Function**
+- `semanticSearch(params)` in `api.js`
+

@@ -81,6 +81,9 @@ htmlcov/
 
 # ChromaDB
 chroma-data/
+chroma_data/
+**/chroma_data/
+
 
 # OS generated files
 .DS_Store

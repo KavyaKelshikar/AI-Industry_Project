@@ -24,8 +24,7 @@ try {
 }
 
 if (-not $DockerRunning) {
-    Write-Host "  [!] Docker Desktop does not appear to be running." -ForegroundColor Red
-    Write-Host "  Please start Docker Desktop and rerun this script." -ForegroundColor Red
+    Write-Host "  [*] Docker Desktop is offline. Falling back to embedded in-memory MongoDB and local ChromaDB." -ForegroundColor Cyan
 } else {
     Write-Host "  [+] Docker is running (Version: $dockerVersion)" -ForegroundColor Green
     
