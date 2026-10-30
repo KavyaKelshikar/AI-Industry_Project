@@ -7,6 +7,10 @@ export default function App() {
   // 'overview' | 'employee-portal' | 'library' | 'upload' | 'chat' | 'employees' | 'sources' | 'search' | 'settings'
   const [currentSection, setCurrentSection] = useState('overview');
 
+  // ── Sidebar & Role View State ──
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [roleOverride, setRoleOverride] = useState(null); // 'admin' | 'employee' | null
+
   // ── Health State ──
   const [healthData, setHealthData] = useState(null);
   const [healthLoading, setHealthLoading] = useState(true);
@@ -19,6 +23,26 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(false);
   const [authFeedback, setAuthFeedback] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Computed Role: Admin (Super Admin, Company Admin) vs Employee
+  // Supports roleOverride so admins can test the exact Employee view
+  const userRoleStr = (userSession?.role?.name || userSession?.role || '').toLowerCase();
+  const baseIsAdmin = userSession
+    ? Boolean(userRoleStr.includes('admin') || userSession.isSuperAdmin)
+    : true;
+  const isAdmin = roleOverride !== null ? (roleOverride === 'admin') : baseIsAdmin;
+  const isEmployee = !isAdmin;
+
+  // Enforce role-based view restrictions:
+  // Admin NEVER sees or accesses Employee Portal (redirects to 'overview')
+  // Employee NEVER sees or accesses Admin sections (redirects to 'employee-portal')
+  useEffect(() => {
+    if (isAdmin && currentSection === 'employee-portal') {
+      setCurrentSection('overview');
+    } else if (isEmployee && ['overview', 'employees', 'sources', 'settings'].includes(currentSection)) {
+      setCurrentSection('employee-portal');
+    }
+  }, [isAdmin, isEmployee, currentSection]);
 
   // Form states
   const [loginForm, setLoginForm] = useState({
@@ -1014,161 +1038,307 @@ export default function App() {
   };
 
   return (
-    <div className="dashboard-container">
-      {/* ── 1. Top App Bar (Stitch Corporate Header) ── */}
-      <header className="stitch-topbar">
-        <div className="brand-group" onClick={() => setCurrentSection('overview')}>
-          <div className="brand-logo">
-            <span className="material-symbols-outlined" style={{ fontSize: '26px' }}>factory</span>
+    <div className="stitch-layout">
+      {/* ── Left Sidebar Navigation (Stitch 4 Enterprise Sidebar) ── */}
+      <aside className={`stitch-sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
+        {/* Sidebar Brand Header */}
+        <div className="sidebar-header">
+          <div 
+            className="sidebar-brand-wrapper" 
+            onClick={() => setCurrentSection(isAdmin ? 'overview' : 'employee-portal')}
+            title="Industrial Intelligence Home"
+          >
+            <div className="sidebar-brand-logo">
+              <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>factory</span>
+            </div>
+            {!sidebarCollapsed && (
+              <div className="sidebar-brand-text">
+                <span className="sidebar-brand-title">STITCH AI</span>
+                <span className="sidebar-brand-sub">Industrial Intel</span>
+              </div>
+            )}
           </div>
-          <div>
-            <h1 className="brand-title">Industrial Intelligence</h1>
-            <p className="brand-subtitle">AI Knowledge Platform &amp; Operational Governance</p>
-          </div>
+          <button 
+            type="button"
+            className="sidebar-toggle-btn"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>
+              {sidebarCollapsed ? 'chevron_right' : 'chevron_left'}
+            </span>
+          </button>
         </div>
 
-        {/* Topbar Quick Search Bar */}
-        <form className="topbar-search-box" onSubmit={handleGlobalSearch}>
-          <span className="material-symbols-outlined">search</span>
-          <input
-            type="text"
-            placeholder="Search documents &amp; SOPs..."
-            value={topbarSearchQuery}
-            onChange={(e) => setTopbarSearchQuery(e.target.value)}
-          />
-        </form>
+        {/* Role Mode Indicator & Demo Switcher */}
+        {!sidebarCollapsed && (
+          <div className="sidebar-role-panel">
+            <div className={`sidebar-role-tag ${isAdmin ? 'admin' : 'employee'}`}>
+              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
+                {isAdmin ? 'admin_panel_settings' : 'badge'}
+              </span>
+              <span>{isAdmin ? 'Admin Console' : 'Employee View'}</span>
+            </div>
+            <button 
+              type="button"
+              className="sidebar-role-switch-btn"
+              onClick={() => {
+                const nextRole = isAdmin ? 'employee' : 'admin';
+                setRoleOverride(nextRole);
+                setCurrentSection(nextRole === 'admin' ? 'overview' : 'employee-portal');
+              }}
+              title="Switch between Admin and Employee role views"
+            >
+              Switch to {isAdmin ? 'Employee' : 'Admin'} View
+            </button>
+          </div>
+        )}
 
-        {/* Actions & User State */}
-        <div className="header-status">
-          <span className={`status-pill ${healthData?.status === 'healthy' ? 'pill-healthy' : 'pill-degraded'}`}>
-            <span className="status-dot"></span>
-            {healthData ? (healthData.status === 'healthy' ? 'Cluster Healthy' : 'Mesh Degraded') : 'Connecting...'}
-          </span>
+        {/* Navigation Links */}
+        <nav className="sidebar-nav-container">
+          <div className="sidebar-nav-group">
+            {!sidebarCollapsed && <span className="sidebar-group-title">WORKSPACE</span>}
 
-          {userSession ? (
-            <div className="user-account-badge" onClick={() => setCurrentSection('settings')} title="View Settings &amp; Security">
-              <div className="user-avatar-sm">
-                {userSession.name ? userSession.name.charAt(0).toUpperCase() : 'U'}
-              </div>
-              <div className="user-badge-info">
-                <span className="user-badge-name">{userSession.name || 'User'}</span>
-                <span className="user-badge-role">
-                  {userSession.company?.code || 'TENANT'} • {userSession.role?.name || 'ADMIN'}
-                </span>
-              </div>
+            {/* Admin Overview - ADMIN ONLY (Employees never see this) */}
+            {isAdmin && (
               <button
-                className="btn-action-icon"
-                title="Log out"
-                onClick={(e) => { e.stopPropagation(); handleLogout(); }}
-                disabled={authLoading}
+                type="button"
+                className={`sidebar-nav-link ${currentSection === 'overview' ? 'active' : ''}`}
+                onClick={() => setCurrentSection('overview')}
+                title="Admin Overview"
               >
-                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>logout</span>
+                <span className="material-symbols-outlined">analytics</span>
+                {!sidebarCollapsed && <span>Admin Overview</span>}
+              </button>
+            )}
+
+            {/* Employee Portal - EMPLOYEE ONLY (Admins never see this) */}
+            {isEmployee && (
+              <button
+                type="button"
+                className={`sidebar-nav-link ${currentSection === 'employee-portal' ? 'active' : ''}`}
+                onClick={() => setCurrentSection('employee-portal')}
+                title="Employee Portal"
+              >
+                <span className="material-symbols-outlined">dashboard</span>
+                {!sidebarCollapsed && <span>Employee Portal</span>}
+              </button>
+            )}
+
+            {/* Semantic Search - Stitch 6 */}
+            <button
+              type="button"
+              className={`sidebar-nav-link ${currentSection === 'search' ? 'active' : ''}`}
+              onClick={() => {
+                if (!userSession) setAuthModalOpen(true);
+                setCurrentSection('search');
+              }}
+              title="Semantic Search"
+            >
+              <span className="material-symbols-outlined">manage_search</span>
+              {!sidebarCollapsed && <span>Semantic Search</span>}
+            </button>
+
+            {/* AI Knowledge Chat - Stitch 3 */}
+            <button
+              type="button"
+              className={`sidebar-nav-link ${currentSection === 'chat' ? 'active' : ''}`}
+              onClick={() => {
+                if (!userSession) setAuthModalOpen(true);
+                setCurrentSection('chat');
+              }}
+              title="AI Knowledge Chat"
+            >
+              <span className="material-symbols-outlined">smart_toy</span>
+              {!sidebarCollapsed && <span>AI Knowledge Chat</span>}
+            </button>
+
+            {/* Knowledge Library - Stitch 8 */}
+            <button
+              type="button"
+              className={`sidebar-nav-link ${currentSection === 'library' ? 'active' : ''}`}
+              onClick={() => {
+                if (!userSession) setAuthModalOpen(true);
+                setCurrentSection('library');
+              }}
+              title="Knowledge Library"
+            >
+              <span className="material-symbols-outlined">library_books</span>
+              {!sidebarCollapsed && <span>Knowledge Library</span>}
+            </button>
+
+            {/* Upload Knowledge - Stitch 5 */}
+            <button
+              type="button"
+              className={`sidebar-nav-link ${currentSection === 'upload' ? 'active' : ''}`}
+              onClick={() => {
+                if (!userSession) setAuthModalOpen(true);
+                setCurrentSection('upload');
+              }}
+              title="Upload Knowledge"
+            >
+              <span className="material-symbols-outlined">cloud_upload</span>
+              {!sidebarCollapsed && <span>Upload Knowledge</span>}
+            </button>
+          </div>
+
+          {/* Governance & Operations - ADMIN ONLY */}
+          {isAdmin && (
+            <div className="sidebar-nav-group">
+              {!sidebarCollapsed && <span className="sidebar-group-title">GOVERNANCE & ADMIN</span>}
+
+              <button
+                type="button"
+                className={`sidebar-nav-link ${currentSection === 'employees' ? 'active' : ''}`}
+                onClick={() => {
+                  if (!userSession) setAuthModalOpen(true);
+                  setCurrentSection('employees');
+                }}
+                title="Employees Directory"
+              >
+                <span className="material-symbols-outlined">group</span>
+                {!sidebarCollapsed && <span>Employees</span>}
+              </button>
+
+              <button
+                type="button"
+                className={`sidebar-nav-link ${currentSection === 'sources' ? 'active' : ''}`}
+                onClick={() => {
+                  if (!userSession) setAuthModalOpen(true);
+                  setCurrentSection('sources');
+                }}
+                title="Knowledge Sources"
+              >
+                <span className="material-symbols-outlined">folder_managed</span>
+                {!sidebarCollapsed && <span>Knowledge Sources</span>}
+              </button>
+
+              <button
+                type="button"
+                className={`sidebar-nav-link ${currentSection === 'settings' ? 'active' : ''}`}
+                onClick={() => {
+                  if (!userSession) setAuthModalOpen(true);
+                  setCurrentSection('settings');
+                }}
+                title="System Settings & Security"
+              >
+                <span className="material-symbols-outlined">settings</span>
+                {!sidebarCollapsed && <span>Settings &amp; Security</span>}
               </button>
             </div>
-          ) : (
-            <button className="btn-primary btn-sm" onClick={() => setAuthModalOpen(true)}>
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>login</span>
-              Sign In / Register
-            </button>
+          )}
+        </nav>
+
+        {/* Sidebar Footer */}
+        <div className="sidebar-bottom">
+          <div className={`sidebar-health-pill ${healthData?.status === 'healthy' ? 'healthy' : 'degraded'}`}>
+            <span className="status-dot"></span>
+            {!sidebarCollapsed && (
+              <span>{healthData?.status === 'healthy' ? 'Cluster Active' : 'Mesh Degraded'}</span>
+            )}
+          </div>
+          {!sidebarCollapsed && userSession && (
+            <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+              {userSession.company?.code || 'TENANT'}
+            </span>
           )}
         </div>
-      </header>
+      </aside>
 
-      {/* ── 2. Stitch Navigation Tabs Bar ── */}
-      <nav className="nav-tabs-bar">
-        <button
-          className={`nav-tab-btn ${currentSection === 'overview' ? 'active' : ''}`}
-          onClick={() => setCurrentSection('overview')}
-        >
-          <span className="material-symbols-outlined">analytics</span>
-          Admin Overview
-        </button>
+      {/* ── Main App Work Area ── */}
+      <div className="stitch-main-area">
+        {/* ── Top Header ── */}
+        <header className="stitch-topbar">
+          <div className="topbar-page-info">
+            <span className="topbar-breadcrumb">{isAdmin ? 'ADMIN' : 'EMPLOYEE'}</span>
+            <span className="topbar-divider">/</span>
+            <h2 className="topbar-page-title">
+              {currentSection === 'overview' && 'Operational Governance & Overview'}
+              {currentSection === 'employee-portal' && 'Employee Knowledge Portal'}
+              {currentSection === 'library' && 'Verified Knowledge Library'}
+              {currentSection === 'upload' && 'Knowledge Ingestion Pipeline'}
+              {currentSection === 'chat' && 'RAG Grounded Intelligence Chat'}
+              {currentSection === 'search' && 'Multi-Modal Hybrid Semantic Search'}
+              {currentSection === 'employees' && 'Enterprise Personnel Directory'}
+              {currentSection === 'sources' && 'Enterprise Connectors & Storage'}
+              {currentSection === 'settings' && 'System Configuration & Security'}
+            </h2>
+          </div>
 
-        <button
-          className={`nav-tab-btn ${currentSection === 'employee-portal' ? 'active' : ''}`}
-          onClick={() => setCurrentSection('employee-portal')}
-        >
-          <span className="material-symbols-outlined">dashboard</span>
-          Employee Portal
-        </button>
+          <div className="header-status">
+            {/* Topbar Quick Search Bar */}
+            <form className="topbar-search-box" onSubmit={handleGlobalSearch}>
+              <span className="material-symbols-outlined">search</span>
+              <input
+                type="text"
+                placeholder="Search documents &amp; SOPs..."
+                value={topbarSearchQuery}
+                onChange={(e) => setTopbarSearchQuery(e.target.value)}
+              />
+            </form>
 
-        <button
-          className={`nav-tab-btn ${currentSection === 'library' ? 'active' : ''}`}
-          onClick={() => {
-            if (!userSession) setAuthModalOpen(true);
-            setCurrentSection('library');
-          }}
-        >
-          <span className="material-symbols-outlined">library_books</span>
-          Knowledge Library
-        </button>
+            {/* Quick Role Switcher Pill in Topbar */}
+            <button 
+              type="button"
+              className="status-pill"
+              style={{ 
+                background: isAdmin ? 'var(--color-primary-fixed)' : 'var(--color-success-container)',
+                color: isAdmin ? 'var(--color-primary)' : 'var(--color-success)',
+                cursor: 'pointer',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+              onClick={() => {
+                const nextRole = isAdmin ? 'employee' : 'admin';
+                setRoleOverride(nextRole);
+                setCurrentSection(nextRole === 'admin' ? 'overview' : 'employee-portal');
+              }}
+              title="Click to toggle between Admin and Employee view"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
+                {isAdmin ? 'admin_panel_settings' : 'badge'}
+              </span>
+              {isAdmin ? 'Mode: Admin' : 'Mode: Employee'} ⇄
+            </button>
 
-        <button
-          className={`nav-tab-btn ${currentSection === 'upload' ? 'active' : ''}`}
-          onClick={() => {
-            if (!userSession) setAuthModalOpen(true);
-            setCurrentSection('upload');
-          }}
-        >
-          <span className="material-symbols-outlined">cloud_upload</span>
-          Upload Knowledge
-        </button>
+            <span className={`status-pill ${healthData?.status === 'healthy' ? 'pill-healthy' : 'pill-degraded'}`}>
+              <span className="status-dot"></span>
+              {healthData ? (healthData.status === 'healthy' ? 'Cluster Healthy' : 'Mesh Degraded') : 'Connecting...'}
+            </span>
 
-        <button
-          className={`nav-tab-btn ${currentSection === 'chat' ? 'active' : ''}`}
-          onClick={() => {
-            if (!userSession) setAuthModalOpen(true);
-            setCurrentSection('chat');
-          }}
-        >
-          <span className="material-symbols-outlined">smart_toy</span>
-          AI Knowledge Chat
-        </button>
+            {userSession ? (
+              <div className="user-account-badge" onClick={() => setCurrentSection('settings')} title="View Settings &amp; Security">
+                <div className="user-avatar-sm">
+                  {userSession.name ? userSession.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+                <div className="user-badge-info">
+                  <span className="user-badge-name">{userSession.name || 'User'}</span>
+                  <span className="user-badge-role">
+                    {userSession.company?.code || 'TENANT'} • {userSession.role?.name || 'ADMIN'}
+                  </span>
+                </div>
+                <button
+                  className="btn-action-icon"
+                  title="Log out"
+                  onClick={(e) => { e.stopPropagation(); handleLogout(); }}
+                  disabled={authLoading}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>logout</span>
+                </button>
+              </div>
+            ) : (
+              <button className="btn-primary btn-sm" onClick={() => setAuthModalOpen(true)}>
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>login</span>
+                Sign In / Register
+              </button>
+            )}
+          </div>
+        </header>
 
-        <button
-          className={`nav-tab-btn ${currentSection === 'employees' ? 'active' : ''}`}
-          onClick={() => {
-            if (!userSession) setAuthModalOpen(true);
-            setCurrentSection('employees');
-          }}
-        >
-          <span className="material-symbols-outlined">group</span>
-          Employees
-        </button>
-
-        <button
-          className={`nav-tab-btn ${currentSection === 'sources' ? 'active' : ''}`}
-          onClick={() => {
-            if (!userSession) setAuthModalOpen(true);
-            setCurrentSection('sources');
-          }}
-        >
-          <span className="material-symbols-outlined">folder_managed</span>
-          Knowledge Sources
-        </button>
-
-        <button
-          className={`nav-tab-btn ${currentSection === 'search' ? 'active' : ''}`}
-          onClick={() => {
-            if (!userSession) setAuthModalOpen(true);
-            setCurrentSection('search');
-          }}
-        >
-          <span className="material-symbols-outlined">manage_search</span>
-          Semantic Search
-        </button>
-
-        <button
-          className={`nav-tab-btn ${currentSection === 'settings' ? 'active' : ''}`}
-          onClick={() => {
-            if (!userSession) setAuthModalOpen(true);
-            setCurrentSection('settings');
-          }}
-        >
-          <span className="material-symbols-outlined">settings</span>
-          System Settings &amp; Security
-        </button>
-      </nav>
+        {/* ── Page Content Container ── */}
+        <main className="stitch-page-content">
 
       {/* ── SECTION 1: Admin Overview (Stitch 1 & 4) ── */}
       {currentSection === 'overview' && (
@@ -3035,11 +3205,15 @@ export default function App() {
         </div>
       )}
 
+      {/* ── Close Main Page Content ── */}
+      </main>
+
       {/* ── Footer ── */}
       <footer className="dashboard-footer">
         <span>Stitch AI Industrial Knowledge Intelligence — Enterprise Release</span>
         <span>Environment: <strong>Production Ready (v2.4)</strong></span>
       </footer>
     </div>
-  );
+  </div>
+);
 }

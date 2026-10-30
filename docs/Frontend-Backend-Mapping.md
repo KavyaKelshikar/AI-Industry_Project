@@ -513,3 +513,32 @@ This document provides a precise mapping of every Stitch AI frontend page to the
 **Frontend API Function**
 - `semanticSearch(params)` in `api.js`
 
+---
+
+## 10. Sidebar Navigation Architecture & Role-Based Access Scoping
+
+**UI Reference**: Stitch 4 Enterprise Sidebar Layout (`stitch_industrial_knowledge_intelligence (4)`)
+
+**Layout Structure**
+- Fixed/collapsible left sidebar (`.stitch-sidebar`) replacing top horizontal tab navigation bar.
+- App workspace layout (`.stitch-layout`, `.stitch-main-area`, `.stitch-page-content`).
+
+**Role-Based Visibility Matrix**
+| Navigation Section | Admin Role (Super Admin / Company Admin) | Employee Role |
+| :--- | :---: | :---: |
+| **Admin Overview** (`overview`) | **Visible** | **Hidden** |
+| **Employee Portal** (`employee-portal`) | **Strictly Hidden** | **Visible** |
+| **Semantic Search** (`search`) | **Visible** | **Visible** |
+| **AI Knowledge Chat** (`chat`) | **Visible** | **Visible** |
+| **Knowledge Library** (`library`) | **Visible** | **Visible** |
+| **Upload Knowledge** (`upload`) | **Visible** | **Visible** |
+| **Employees Directory** (`employees`) | **Visible** | **Hidden** |
+| **Knowledge Sources** (`sources`) | **Visible** | **Hidden** |
+| **Settings & Security** (`settings`) | **Visible** | **Hidden** |
+
+**Access Enforcement Rules**
+- When user is in Admin mode, `employee-portal` is strictly excluded from sidebar and any navigation attempts redirect to `overview`.
+- When user is in Employee mode, administrative tools (`overview`, `employees`, `sources`, `settings`) are strictly excluded from sidebar and any navigation attempts redirect to `employee-portal`.
+- Interactive mode switcher pill allows testing both views directly in the UI.
+
+

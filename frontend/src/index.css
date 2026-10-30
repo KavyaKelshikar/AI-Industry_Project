@@ -114,42 +114,173 @@ body {
   vertical-align: middle;
 }
 
-/* ── Container Layout ── */
-.dashboard-container {
-  max-width: 1440px;
+/* ── Main App Shell Layout (Stitch 4 Left Sidebar Architecture) ── */
+.stitch-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--color-surface);
+  position: relative;
+}
+
+/* ── Fixed/Sticky Left Sidebar ── */
+.stitch-sidebar {
+  width: 260px;
+  min-width: 260px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background: #0f172a; /* Obsidian Navy */
+  color: #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), min-width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.stitch-sidebar.collapsed {
+  width: 76px;
+  min-width: 76px;
+}
+
+.sidebar-header {
+  height: 64px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 10px;
+}
+
+.sidebar-brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.sidebar-brand-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #004ac6 0%, #2563eb 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sidebar-brand-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.sidebar-brand-sub {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.sidebar-toggle-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* ── Main App Work Area ── */
+.stitch-main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.stitch-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  background: var(--color-surface-container-lowest);
+  border-bottom: 1px solid var(--color-outline-variant);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  backdrop-filter: blur(12px);
+}
+
+.topbar-page-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbar-breadcrumb {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.topbar-divider {
+  color: var(--color-outline-variant);
+}
+
+.topbar-page-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.stitch-page-content {
+  flex: 1;
+  padding: 24px 28px 80px 28px;
+  max-width: 1560px;
+  width: 100%;
   margin: 0 auto;
-  padding: 16px 24px 80px 24px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* ── Stitch Top App Bar ── */
-.stitch-topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 24px;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: 12px;
-  z-index: 100;
-  backdrop-filter: blur(12px);
-}
-
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 24px;
-  background: var(--color-surface-container-lowest);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-}
 
 .brand-group {
   display: flex;
@@ -311,49 +442,147 @@ body {
   letter-spacing: 0.03em;
 }
 
-/* ── Stitch Navigation Tabs Bar ── */
-.nav-tabs-bar {
+/* ── Sidebar Navigation Groups & Links ── */
+.sidebar-role-panel {
+  padding: 10px 14px;
+  margin: 12px 12px 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 6px;
-  padding: 6px;
-  background: var(--color-surface-container-low);
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
-  overflow-x: auto;
 }
 
-.nav-tab-btn {
+.sidebar-role-tag {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
-  background: transparent;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sidebar-role-tag.admin {
+  color: #93c5fd;
+}
+
+.sidebar-role-tag.employee {
+  color: #86efac;
+}
+
+.sidebar-role-switch-btn {
+  background: rgba(37, 99, 235, 0.25);
+  border: 1px solid rgba(37, 99, 235, 0.4);
+  color: #bfdbfe;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.sidebar-role-switch-btn:hover {
+  background: rgba(37, 99, 235, 0.45);
+  color: #ffffff;
+}
+
+.sidebar-nav-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sidebar-group-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  padding: 6px 12px 4px;
+  text-transform: uppercase;
+}
+
+.sidebar-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
   border: none;
-  border-radius: var(--radius-md);
+  background: transparent;
+  color: #94a3b8;
   font-family: var(--font-family-body);
   font-size: 13.5px;
   font-weight: 500;
-  color: var(--color-on-surface-variant);
   cursor: pointer;
-  white-space: nowrap;
   transition: all 0.15s ease;
+  text-align: left;
+  width: 100%;
+  white-space: nowrap;
 }
 
-.nav-tab-btn:hover {
-  background: var(--color-surface-container);
-  color: var(--color-on-surface);
+.sidebar-nav-link:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
 }
 
-.nav-tab-btn.active {
-  background: var(--color-surface-container-lowest);
-  color: var(--color-primary);
+.sidebar-nav-link.active {
+  background: #2563eb;
+  color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 1px 4px rgba(17, 28, 45, 0.08);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
-.nav-tab-btn .material-symbols-outlined {
-  font-size: 19px;
+.sidebar-nav-link .material-symbols-outlined {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.sidebar-bottom {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.sidebar-health-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.sidebar-health-pill.healthy {
+  color: #34d399;
+}
+
+.sidebar-health-pill.degraded {
+  color: #fbbf24;
+}
+
+.sidebar-health-pill .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
 }
 
 /* ── Hero Banner: System Intelligence at a Glance (Stitch Theme) ── */
