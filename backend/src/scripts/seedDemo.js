@@ -11,6 +11,7 @@ const { seedCompanies } = require('../seeders/companySeeder');
 const { seedDepartments } = require('../seeders/departmentSeeder');
 const { seedPermissions } = require('../seeders/permissionSeeder');
 const { seedRoles } = require('../seeders/roleSeeder');
+const { seedUsers } = require('../seeders/userSeeder');
 const logger = require('../utils/logger');
 const mongoose = require('mongoose');
 
@@ -22,6 +23,7 @@ async function runDemoSeed() {
     await seedRoles();
     await seedCompanies();
     await seedDepartments();
+    await seedUsers();
     logger.info('--- Demo Seeding Completed Successfully ---');
     await mongoose.connection.close();
     process.exit(0);

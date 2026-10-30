@@ -24,30 +24,50 @@ export default function App() {
   const [authFeedback, setAuthFeedback] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Computed Role: Admin (Super Admin, Company Admin) vs Employee
-  // Supports roleOverride so admins can test the exact Employee view
+  // ── 3 Core Role Personas ──
+  // 1. Super Admin: Platform-wide command & oversight (company: null, all permissions)
+  // 2. Company Admin: Tenant-scoped administration (company: specific tenant)
+  // 3. Employee: Standard employee portal & AI chat
   const userRoleStr = (userSession?.role?.name || userSession?.role || '').toLowerCase();
-  const baseIsAdmin = userSession
-    ? Boolean(userRoleStr.includes('admin') || userSession.isSuperAdmin)
-    : true;
-  const isAdmin = roleOverride !== null ? (roleOverride === 'admin') : baseIsAdmin;
-  const isEmployee = !isAdmin;
+  const isSessionSuperAdmin = Boolean(userSession && (userRoleStr.includes('super') || userSession.isSuperAdmin));
+  const isSessionCompanyAdmin = Boolean(userSession && !isSessionSuperAdmin && userRoleStr.includes('admin'));
+  const isSessionEmployee = Boolean(userSession && !isSessionSuperAdmin && !isSessionCompanyAdmin);
 
-  // Enforce role-based view restrictions:
-  // Admin NEVER sees or accesses Employee Portal (redirects to 'overview')
-  // Employee NEVER sees or accesses Admin sections (redirects to 'employee-portal')
+  // Active role determination: roleOverride takes priority; defaults to session or 'super-admin' for demo exploration
+  const activeRole = roleOverride || (userSession ? (isSessionSuperAdmin ? 'super-admin' : isSessionCompanyAdmin ? 'company-admin' : 'employee') : 'super-admin');
+
+  const isSuperAdmin = activeRole === 'super-admin';
+  const isCompanyAdmin = activeRole === 'company-admin';
+  const isEmployee = activeRole === 'employee';
+  const isAdmin = isSuperAdmin || isCompanyAdmin;
+
+  // Allowed section definitions per role
+  const saSections = ['super-admin', 'sa-tenants', 'sa-users', 'sa-infrastructure', 'sa-config', 'sa-audit', 'sa-danger'];
+  const caSections = ['overview', 'search', 'chat', 'library', 'upload', 'employees', 'sources', 'settings'];
+  const empSections = ['employee-portal', 'search', 'chat', 'library', 'upload'];
+
+  // Enforce strict role-based view restrictions:
   useEffect(() => {
-    if (isAdmin && currentSection === 'employee-portal') {
-      setCurrentSection('overview');
-    } else if (isEmployee && ['overview', 'employees', 'sources', 'settings'].includes(currentSection)) {
-      setCurrentSection('employee-portal');
+    if (isSuperAdmin) {
+      if (!saSections.includes(currentSection)) {
+        setCurrentSection('super-admin');
+      }
+    } else if (isCompanyAdmin) {
+      if (!caSections.includes(currentSection)) {
+        setCurrentSection('overview');
+      }
+    } else if (isEmployee) {
+      if (!empSections.includes(currentSection)) {
+        setCurrentSection('employee-portal');
+      }
     }
-  }, [isAdmin, isEmployee, currentSection]);
+  }, [activeRole, currentSection]);
 
-  // Form states
+  // Form states & Login Persona Selection
+  const [selectedLoginPersona, setSelectedLoginPersona] = useState('super-admin'); // 'super-admin' | 'company-admin' | 'employee'
   const [loginForm, setLoginForm] = useState({
-    email: '',
-    password: '',
+    email: 'superadmin@platform.ai',
+    password: 'Password123!',
     companySlug: '',
   });
 
@@ -65,6 +85,190 @@ export default function App() {
 
   // ── Topbar Search ──
   const [topbarSearchQuery, setTopbarSearchQuery] = useState('');
+
+  // ── Super Admin Interactive State & Functional Controls ──
+  const [tenantsList, setTenantsList] = useState([
+    { id: 't1', name: 'Apex Engineering', slug: 'apex-engineering', code: 'APEX', admin: 'admin@apexengineering.demo', users: 24, docs: 18, status: 'active', tier: 'Enterprise', created: '2026-08-15' },
+    { id: 't2', name: 'Nova Finance Corp', slug: 'nova-finance', code: 'NOVA', admin: 'admin@novafinance.demo', users: 12, docs: 9, status: 'active', tier: 'Professional', created: '2026-09-01' },
+    { id: 't3', name: 'Vertex Manufacturing', slug: 'vertex-manufacturing', code: 'VERTEX', admin: 'admin@vertexmfg.demo', users: 31, docs: 42, status: 'suspended', tier: 'Enterprise', created: '2026-07-20' },
+  ]);
+  const [tenantSearch, setTenantSearch] = useState('');
+  const [tenantStatusFilter, setTenantStatusFilter] = useState('all');
+  const [newTenantModalOpen, setNewTenantModalOpen] = useState(false);
+  const [newTenantForm, setNewTenantForm] = useState({ name: '', slug: '', code: '', adminEmail: '', password: 'Password123!', tier: 'Enterprise' });
+
+  const [platformUsersList, setPlatformUsersList] = useState([
+    { id: 'u1', name: 'Global Super Admin', email: 'superadmin@platform.ai', company: 'Global Platform', role: 'Super Admin', status: 'active', lastActive: 'Just now' },
+    { id: 'u2', name: 'Apex Company Admin', email: 'admin@apexengineering.demo', company: 'Apex Engineering', role: 'Company Admin', status: 'active', lastActive: '5 min ago' },
+    { id: 'u3', name: 'Alex Engineer', email: 'employee@apexengineering.demo', company: 'Apex Engineering', role: 'Employee', status: 'active', lastActive: '12 min ago' },
+    { id: 'u4', name: 'Nova Admin', email: 'admin@novafinance.demo', company: 'Nova Finance Corp', role: 'Company Admin', status: 'active', lastActive: '1 hr ago' },
+    { id: 'u5', name: 'Vertex Admin', email: 'admin@vertexmfg.demo', company: 'Vertex Manufacturing', role: 'Company Admin', status: 'suspended', lastActive: '3 days ago' },
+  ]);
+  const [userSearch, setUserSearch] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState('all');
+  const [newUserModalOpen, setNewUserModalOpen] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({ name: '', email: '', role: 'Company Admin', company: 'Apex Engineering' });
+
+  const [globalConfig, setGlobalConfig] = useState({
+    aiModel: 'Gemini 2.0 Flash',
+    maxUploadSizeMB: '50 MB',
+    chunkSize: '1000 tokens',
+    defaultTopK: '5',
+    authMethod: 'JWT + Refresh Token (HttpOnly)',
+    encryption: 'bcrypt (12 rounds) + AES-256',
+    sessionTimeout: '24 hours',
+    ocrEngine: 'Tesseract 5.0 (Active)',
+  });
+  const [configFeedback, setConfigFeedback] = useState(null);
+
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [purgeModalOpen, setPurgeModalOpen] = useState(false);
+  const [purgeSuccess, setPurgeSuccess] = useState(false);
+  const [probeLoading, setProbeLoading] = useState(false);
+  const [probeResult, setProbeResult] = useState(null);
+
+  const [saAuditLogsList, setSaAuditLogsList] = useState([
+    { id: 'aud-1', time: 'Just now', actor: 'superadmin@platform.ai', action: 'SYSTEM_SETTINGS_UPDATE', target: 'Global AI Model & Limits', ip: '127.0.0.1', status: 'SUCCESS' },
+    { id: 'aud-2', time: '14 mins ago', actor: 'superadmin@platform.ai', action: 'TENANT_HEALTH_CHECK', target: 'Service Mesh Probe', ip: '127.0.0.1', status: 'SUCCESS' },
+    { id: 'aud-3', time: '1 hr ago', actor: 'admin@apexengineering.demo', action: 'DOCUMENT_INGESTION', target: 'Safety_Manual_v2.pdf', ip: '192.168.1.42', status: 'SUCCESS' },
+    { id: 'aud-4', time: '2 hrs ago', actor: 'admin@vertexmfg.demo', action: 'AUTH_LOGIN_FAILED', target: 'Invalid password attempt', ip: '10.0.0.8', status: 'WARN' },
+    { id: 'aud-5', time: '4 hrs ago', actor: 'system_cron', action: 'CHROMA_VECTOR_INDEX_SYNC', target: 'Global Collection Synced', ip: 'internal', status: 'SUCCESS' },
+  ]);
+  const [auditSearch, setAuditSearch] = useState('');
+
+  const handleCreateTenant = (e) => {
+    e.preventDefault();
+    if (!newTenantForm.name || !newTenantForm.slug || !newTenantForm.adminEmail) return;
+    const newEntry = {
+      id: `t${Date.now()}`,
+      name: newTenantForm.name.trim(),
+      slug: newTenantForm.slug.trim().toLowerCase(),
+      code: (newTenantForm.code || newTenantForm.slug.slice(0, 4)).toUpperCase(),
+      admin: newTenantForm.adminEmail.trim(),
+      users: 1,
+      docs: 0,
+      status: 'active',
+      tier: newTenantForm.tier || 'Enterprise',
+      created: new Date().toISOString().slice(0, 10),
+    };
+    setTenantsList([newEntry, ...tenantsList]);
+    setSaAuditLogsList([
+      { id: `aud-${Date.now()}`, time: 'Just now', actor: 'superadmin@platform.ai', action: 'TENANT_REGISTERED', target: `${newEntry.name} (${newEntry.code})`, ip: '127.0.0.1', status: 'SUCCESS' },
+      ...saAuditLogsList,
+    ]);
+    setNewTenantModalOpen(false);
+    setNewTenantForm({ name: '', slug: '', code: '', adminEmail: '', password: 'Password123!', tier: 'Enterprise' });
+    alert(`Tenant "${newEntry.name}" has been successfully provisioned!`);
+  };
+
+  const handleToggleTenantStatus = (id) => {
+    setTenantsList(tenantsList.map(t => {
+      if (t.id === id) {
+        const nextStatus = t.status === 'active' ? 'suspended' : 'active';
+        setSaAuditLogsList([
+          { id: `aud-${Date.now()}`, time: 'Just now', actor: 'superadmin@platform.ai', action: 'TENANT_STATUS_CHANGE', target: `${t.name} -> ${nextStatus.toUpperCase()}`, ip: '127.0.0.1', status: 'SUCCESS' },
+          ...saAuditLogsList,
+        ]);
+        return { ...t, status: nextStatus };
+      }
+      return t;
+    }));
+  };
+
+  const handleCreatePlatformUser = (e) => {
+    e.preventDefault();
+    if (!newUserForm.name || !newUserForm.email) return;
+    const newEntry = {
+      id: `u${Date.now()}`,
+      name: newUserForm.name.trim(),
+      email: newUserForm.email.trim(),
+      role: newUserForm.role,
+      company: newUserForm.company || 'Global Platform',
+      status: 'active',
+      lastActive: 'Just now',
+    };
+    setPlatformUsersList([newEntry, ...platformUsersList]);
+    setSaAuditLogsList([
+      { id: `aud-${Date.now()}`, time: 'Just now', actor: 'superadmin@platform.ai', action: 'USER_CREATED', target: `${newEntry.name} (${newEntry.role})`, ip: '127.0.0.1', status: 'SUCCESS' },
+      ...saAuditLogsList,
+    ]);
+    setNewUserModalOpen(false);
+    setNewUserForm({ name: '', email: '', role: 'Company Admin', company: 'Apex Engineering' });
+    alert(`User "${newEntry.name}" created successfully!`);
+  };
+
+  const handleToggleUserStatus = (id) => {
+    setPlatformUsersList(platformUsersList.map(u => {
+      if (u.id === id) {
+        const nextStatus = u.status === 'active' ? 'suspended' : 'active';
+        setSaAuditLogsList([
+          { id: `aud-${Date.now()}`, time: 'Just now', actor: 'superadmin@platform.ai', action: 'USER_STATUS_CHANGE', target: `${u.email} -> ${nextStatus.toUpperCase()}`, ip: '127.0.0.1', status: 'SUCCESS' },
+          ...saAuditLogsList,
+        ]);
+        return { ...u, status: nextStatus };
+      }
+      return u;
+    }));
+  };
+
+  const handleResetUserPassword = (email) => {
+    setSaAuditLogsList([
+      { id: `aud-${Date.now()}`, time: 'Just now', actor: 'superadmin@platform.ai', action: 'PASSWORD_RESET_DISPATCH', target: email, ip: '127.0.0.1', status: 'SUCCESS' },
+      ...saAuditLogsList,
+    ]);
+    alert(`Secure password reset instructions dispatched to: ${email}`);
+  };
+
+  const handleSaveGlobalConfig = (e) => {
+    e.preventDefault();
+    setConfigFeedback('Global system configuration successfully persisted!');
+    setSaAuditLogsList([
+      { id: `aud-${Date.now()}`, time: 'Just now', actor: 'superadmin@platform.ai', action: 'SYSTEM_SETTINGS_UPDATE', target: `Model: ${globalConfig.aiModel}`, ip: '127.0.0.1', status: 'SUCCESS' },
+      ...saAuditLogsList,
+    ]);
+    setTimeout(() => setConfigFeedback(null), 3000);
+  };
+
+  const handleRunMeshProbe = async () => {
+    setProbeLoading(true);
+    const start = Date.now();
+    try {
+      await fetchHealth();
+      const latency = Date.now() - start;
+      setProbeResult({ ok: true, latency, time: new Date().toLocaleTimeString() });
+      setSaAuditLogsList([
+        { id: `aud-${Date.now()}`, time: 'Just now', actor: 'superadmin@platform.ai', action: 'SERVICE_MESH_PROBE', target: `Latency: ${latency}ms`, ip: '127.0.0.1', status: 'SUCCESS' },
+        ...saAuditLogsList,
+      ]);
+    } catch (_err) {
+      setProbeResult({ ok: false, error: 'Probe timeout or unreachable' });
+    } finally {
+      setProbeLoading(false);
+    }
+  };
+
+  const handleExportAuditLogs = () => {
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(saAuditLogsList, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `platform_audit_trail_${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const handleConfirmPurgeVectors = () => {
+    setPurgeSuccess(true);
+    setSaAuditLogsList([
+      { id: `aud-${Date.now()}`, time: 'Just now', actor: 'superadmin@platform.ai', action: 'VECTOR_DB_PURGE', target: 'ChromaDB All Collections', ip: '127.0.0.1', status: 'DANGER' },
+      ...saAuditLogsList,
+    ]);
+    setTimeout(() => {
+      setPurgeModalOpen(false);
+      setPurgeSuccess(false);
+      alert('Vector collections purged. Collections re-initialized in fresh state.');
+    }, 1200);
+  };
 
   // ── Module 8: Employee State ──
   const [employees, setEmployees] = useState([]);
@@ -310,7 +514,7 @@ export default function App() {
     try {
       const res = await api.getAuditLogs({ page, limit: 10 });
       if (res.ok && res.data) {
-        setAuditLogsList(res.data.items || []);
+        setSaAuditLogsList(res.data.items || []);
         if (res.data.pagination) setAuditPagination(res.data.pagination);
       }
     } catch (err) {
@@ -533,6 +737,15 @@ export default function App() {
 
       if (res.ok && res.data?.user) {
         setUserSession(res.data.user);
+        setRoleOverride(null); // Clear override to follow authenticated session
+        const roleName = (res.data.user.role?.name || res.data.user.role || '').toLowerCase();
+        if (roleName.includes('super') || res.data.user.isSuperAdmin) {
+          setCurrentSection('super-admin');
+        } else if (roleName.includes('admin')) {
+          setCurrentSection('overview');
+        } else {
+          setCurrentSection('employee-portal');
+        }
         setAuthFeedback({ type: 'success', message: `Welcome back, ${res.data.user.name}!` });
         setTimeout(() => setAuthModalOpen(false), 600);
       } else {
@@ -543,6 +756,46 @@ export default function App() {
     } finally {
       setAuthLoading(false);
     }
+  };
+
+  // Instant Demo Persona Sign-In for all 3 login types
+  const handleQuickDemoLogin = (roleType) => {
+    setRoleOverride(roleType);
+    let mockUser;
+    if (roleType === 'super-admin') {
+      mockUser = {
+        name: 'Platform Super Admin',
+        email: 'superadmin@platform.ai',
+        role: { name: 'Super Admin' },
+        isSuperAdmin: true,
+        company: null,
+      };
+      setCurrentSection('super-admin');
+    } else if (roleType === 'company-admin') {
+      mockUser = {
+        name: 'Apex Company Admin',
+        email: 'admin@apexengineering.demo',
+        role: { name: 'Company Admin' },
+        isSuperAdmin: false,
+        company: { name: 'Apex Engineering', code: 'APEX', slug: 'apex-engineering' },
+      };
+      setCurrentSection('overview');
+    } else {
+      mockUser = {
+        name: 'Alex Engineer',
+        email: 'employee@apexengineering.demo',
+        role: { name: 'Employee' },
+        isSuperAdmin: false,
+        company: { name: 'Apex Engineering', code: 'APEX', slug: 'apex-engineering' },
+      };
+      setCurrentSection('employee-portal');
+    }
+    setUserSession(mockUser);
+    setAuthFeedback({ type: 'success', message: `Signed in as ${mockUser.name} (${roleType.replace('-', ' ').toUpperCase()})` });
+    setTimeout(() => {
+      setAuthModalOpen(false);
+      setAuthFeedback(null);
+    }, 450);
   };
 
   const handleRegister = async (e) => {
@@ -1070,162 +1323,269 @@ export default function App() {
           </button>
         </div>
 
-        {/* Role Mode Indicator & Demo Switcher */}
+        {/* Role Mode Indicator & 3-Role Persona Switcher */}
         {!sidebarCollapsed && (
           <div className="sidebar-role-panel">
-            <div className={`sidebar-role-tag ${isAdmin ? 'admin' : 'employee'}`}>
+            <div className={`sidebar-role-tag ${isSuperAdmin ? 'super-admin' : isCompanyAdmin ? 'admin' : 'employee'}`}>
               <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                {isAdmin ? 'admin_panel_settings' : 'badge'}
+                {isSuperAdmin ? 'security' : isCompanyAdmin ? 'admin_panel_settings' : 'badge'}
               </span>
-              <span>{isAdmin ? 'Admin Console' : 'Employee View'}</span>
+              <span>{isSuperAdmin ? 'Super Admin' : isCompanyAdmin ? 'Company Admin' : 'Employee View'}</span>
             </div>
-            <button 
-              type="button"
-              className="sidebar-role-switch-btn"
-              onClick={() => {
-                const nextRole = isAdmin ? 'employee' : 'admin';
-                setRoleOverride(nextRole);
-                setCurrentSection(nextRole === 'admin' ? 'overview' : 'employee-portal');
-              }}
-              title="Switch between Admin and Employee role views"
-            >
-              Switch to {isAdmin ? 'Employee' : 'Admin'} View
-            </button>
+            <div className="sidebar-role-selector">
+              <button 
+                type="button" 
+                className={`role-tab-btn ${isSuperAdmin ? 'active super-admin' : ''}`}
+                onClick={() => {
+                  setRoleOverride('super-admin');
+                  setCurrentSection('super-admin');
+                }}
+                title="Super Admin: Platform command center & all tenants"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>security</span>
+                Super
+              </button>
+              <button 
+                type="button" 
+                className={`role-tab-btn ${isCompanyAdmin ? 'active company-admin' : ''}`}
+                onClick={() => {
+                  setRoleOverride('company-admin');
+                  setCurrentSection('overview');
+                }}
+                title="Company Admin: Tenant management & governance"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>admin_panel_settings</span>
+                Admin
+              </button>
+              <button 
+                type="button" 
+                className={`role-tab-btn ${isEmployee ? 'active employee' : ''}`}
+                onClick={() => {
+                  setRoleOverride('employee');
+                  setCurrentSection('employee-portal');
+                }}
+                title="Employee: Knowledge exploration & AI chat"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '13px' }}>badge</span>
+                Emp
+              </button>
+            </div>
           </div>
         )}
 
         {/* Navigation Links */}
         <nav className="sidebar-nav-container">
-          <div className="sidebar-nav-group">
-            {!sidebarCollapsed && <span className="sidebar-group-title">WORKSPACE</span>}
-
-            {/* Admin Overview - ADMIN ONLY (Employees never see this) */}
-            {isAdmin && (
-              <button
-                type="button"
-                className={`sidebar-nav-link ${currentSection === 'overview' ? 'active' : ''}`}
-                onClick={() => setCurrentSection('overview')}
-                title="Admin Overview"
-              >
-                <span className="material-symbols-outlined">analytics</span>
-                {!sidebarCollapsed && <span>Admin Overview</span>}
-              </button>
-            )}
-
-            {/* Employee Portal - EMPLOYEE ONLY (Admins never see this) */}
-            {isEmployee && (
-              <button
-                type="button"
-                className={`sidebar-nav-link ${currentSection === 'employee-portal' ? 'active' : ''}`}
-                onClick={() => setCurrentSection('employee-portal')}
-                title="Employee Portal"
-              >
-                <span className="material-symbols-outlined">dashboard</span>
-                {!sidebarCollapsed && <span>Employee Portal</span>}
-              </button>
-            )}
-
-            {/* Semantic Search - Stitch 6 */}
-            <button
-              type="button"
-              className={`sidebar-nav-link ${currentSection === 'search' ? 'active' : ''}`}
-              onClick={() => {
-                if (!userSession) setAuthModalOpen(true);
-                setCurrentSection('search');
-              }}
-              title="Semantic Search"
-            >
-              <span className="material-symbols-outlined">manage_search</span>
-              {!sidebarCollapsed && <span>Semantic Search</span>}
-            </button>
-
-            {/* AI Knowledge Chat - Stitch 3 */}
-            <button
-              type="button"
-              className={`sidebar-nav-link ${currentSection === 'chat' ? 'active' : ''}`}
-              onClick={() => {
-                if (!userSession) setAuthModalOpen(true);
-                setCurrentSection('chat');
-              }}
-              title="AI Knowledge Chat"
-            >
-              <span className="material-symbols-outlined">smart_toy</span>
-              {!sidebarCollapsed && <span>AI Knowledge Chat</span>}
-            </button>
-
-            {/* Knowledge Library - Stitch 8 */}
-            <button
-              type="button"
-              className={`sidebar-nav-link ${currentSection === 'library' ? 'active' : ''}`}
-              onClick={() => {
-                if (!userSession) setAuthModalOpen(true);
-                setCurrentSection('library');
-              }}
-              title="Knowledge Library"
-            >
-              <span className="material-symbols-outlined">library_books</span>
-              {!sidebarCollapsed && <span>Knowledge Library</span>}
-            </button>
-
-            {/* Upload Knowledge - Stitch 5 */}
-            <button
-              type="button"
-              className={`sidebar-nav-link ${currentSection === 'upload' ? 'active' : ''}`}
-              onClick={() => {
-                if (!userSession) setAuthModalOpen(true);
-                setCurrentSection('upload');
-              }}
-              title="Upload Knowledge"
-            >
-              <span className="material-symbols-outlined">cloud_upload</span>
-              {!sidebarCollapsed && <span>Upload Knowledge</span>}
-            </button>
-          </div>
-
-          {/* Governance & Operations - ADMIN ONLY */}
-          {isAdmin && (
+          {/* ═════════ 1. SUPER ADMIN EXCLUSIVE SIDEBAR (Shown ONLY to Super Admin) ═════════ */}
+          {isSuperAdmin ? (
             <div className="sidebar-nav-group">
-              {!sidebarCollapsed && <span className="sidebar-group-title">GOVERNANCE & ADMIN</span>}
+              {!sidebarCollapsed && <span className="sidebar-group-title">PLATFORM CONTROL</span>}
 
               <button
                 type="button"
-                className={`sidebar-nav-link ${currentSection === 'employees' ? 'active' : ''}`}
-                onClick={() => {
-                  if (!userSession) setAuthModalOpen(true);
-                  setCurrentSection('employees');
-                }}
-                title="Employees Directory"
+                className={`sidebar-nav-link super-admin-link ${currentSection === 'super-admin' ? 'active' : ''}`}
+                onClick={() => setCurrentSection('super-admin')}
+                title="Platform Command Center"
               >
-                <span className="material-symbols-outlined">group</span>
-                {!sidebarCollapsed && <span>Employees</span>}
+                <span className="material-symbols-outlined">dashboard_customize</span>
+                {!sidebarCollapsed && <span>Command Center</span>}
               </button>
 
               <button
                 type="button"
-                className={`sidebar-nav-link ${currentSection === 'sources' ? 'active' : ''}`}
-                onClick={() => {
-                  if (!userSession) setAuthModalOpen(true);
-                  setCurrentSection('sources');
-                }}
-                title="Knowledge Sources"
+                className={`sidebar-nav-link super-admin-link ${currentSection === 'sa-tenants' ? 'active' : ''}`}
+                onClick={() => setCurrentSection('sa-tenants')}
+                title="Manage All Registered Tenants & Workspaces"
               >
-                <span className="material-symbols-outlined">folder_managed</span>
-                {!sidebarCollapsed && <span>Knowledge Sources</span>}
+                <span className="material-symbols-outlined">corporate_fare</span>
+                {!sidebarCollapsed && <span>Tenant Workspaces</span>}
               </button>
 
               <button
                 type="button"
-                className={`sidebar-nav-link ${currentSection === 'settings' ? 'active' : ''}`}
-                onClick={() => {
-                  if (!userSession) setAuthModalOpen(true);
-                  setCurrentSection('settings');
-                }}
-                title="System Settings & Security"
+                className={`sidebar-nav-link super-admin-link ${currentSection === 'sa-users' ? 'active' : ''}`}
+                onClick={() => setCurrentSection('sa-users')}
+                title="All Platform Users Across Tenants"
               >
-                <span className="material-symbols-outlined">settings</span>
-                {!sidebarCollapsed && <span>Settings &amp; Security</span>}
+                <span className="material-symbols-outlined">supervised_user_circle</span>
+                {!sidebarCollapsed && <span>Platform Users</span>}
+              </button>
+
+              <button
+                type="button"
+                className={`sidebar-nav-link super-admin-link ${currentSection === 'sa-infrastructure' ? 'active' : ''}`}
+                onClick={() => setCurrentSection('sa-infrastructure')}
+                title="Service Mesh & Cluster Health"
+              >
+                <span className="material-symbols-outlined">dns</span>
+                {!sidebarCollapsed && <span>Service Mesh</span>}
+              </button>
+
+              <button
+                type="button"
+                className={`sidebar-nav-link super-admin-link ${currentSection === 'sa-config' ? 'active' : ''}`}
+                onClick={() => setCurrentSection('sa-config')}
+                title="Global System Configuration"
+              >
+                <span className="material-symbols-outlined">tune</span>
+                {!sidebarCollapsed && <span>Global Settings</span>}
+              </button>
+
+              <button
+                type="button"
+                className={`sidebar-nav-link super-admin-link ${currentSection === 'sa-audit' ? 'active' : ''}`}
+                onClick={() => setCurrentSection('sa-audit')}
+                title="Platform Audit Trail & Security Compliance"
+              >
+                <span className="material-symbols-outlined">policy</span>
+                {!sidebarCollapsed && <span>Audit Trail</span>}
+              </button>
+
+              <button
+                type="button"
+                className={`sidebar-nav-link super-admin-link ${currentSection === 'sa-danger' ? 'active' : ''}`}
+                onClick={() => setCurrentSection('sa-danger')}
+                title="Danger Zone & Maintenance Mode"
+                style={{ color: currentSection === 'sa-danger' ? '#fff' : '#f87171' }}
+              >
+                <span className="material-symbols-outlined" style={{ color: '#ef4444' }}>warning</span>
+                {!sidebarCollapsed && <span>Danger Zone</span>}
               </button>
             </div>
+          ) : (
+            /* ═════════ 2. COMPANY ADMIN & EMPLOYEE SIDEBAR ═════════ */
+            <>
+              <div className="sidebar-nav-group">
+                {!sidebarCollapsed && <span className="sidebar-group-title">WORKSPACE</span>}
+
+                {/* Admin Overview - ADMIN ONLY (Employees never see this) */}
+                {isAdmin && (
+                  <button
+                    type="button"
+                    className={`sidebar-nav-link ${currentSection === 'overview' ? 'active' : ''}`}
+                    onClick={() => setCurrentSection('overview')}
+                    title="Admin Overview"
+                  >
+                    <span className="material-symbols-outlined">analytics</span>
+                    {!sidebarCollapsed && <span>Admin Overview</span>}
+                  </button>
+                )}
+
+                {/* Employee Portal - EMPLOYEE ONLY (Admins never see this) */}
+                {isEmployee && (
+                  <button
+                    type="button"
+                    className={`sidebar-nav-link ${currentSection === 'employee-portal' ? 'active' : ''}`}
+                    onClick={() => setCurrentSection('employee-portal')}
+                    title="Employee Portal"
+                  >
+                    <span className="material-symbols-outlined">dashboard</span>
+                    {!sidebarCollapsed && <span>Employee Portal</span>}
+                  </button>
+                )}
+
+                {/* Semantic Search - Stitch 6 */}
+                <button
+                  type="button"
+                  className={`sidebar-nav-link ${currentSection === 'search' ? 'active' : ''}`}
+                  onClick={() => {
+                    if (!userSession) setAuthModalOpen(true);
+                    setCurrentSection('search');
+                  }}
+                  title="Semantic Search"
+                >
+                  <span className="material-symbols-outlined">manage_search</span>
+                  {!sidebarCollapsed && <span>Semantic Search</span>}
+                </button>
+
+                {/* AI Knowledge Chat - Stitch 3 */}
+                <button
+                  type="button"
+                  className={`sidebar-nav-link ${currentSection === 'chat' ? 'active' : ''}`}
+                  onClick={() => {
+                    if (!userSession) setAuthModalOpen(true);
+                    setCurrentSection('chat');
+                  }}
+                  title="AI Knowledge Chat"
+                >
+                  <span className="material-symbols-outlined">smart_toy</span>
+                  {!sidebarCollapsed && <span>AI Knowledge Chat</span>}
+                </button>
+
+                {/* Knowledge Library - Stitch 8 */}
+                <button
+                  type="button"
+                  className={`sidebar-nav-link ${currentSection === 'library' ? 'active' : ''}`}
+                  onClick={() => {
+                    if (!userSession) setAuthModalOpen(true);
+                    setCurrentSection('library');
+                  }}
+                  title="Knowledge Library"
+                >
+                  <span className="material-symbols-outlined">library_books</span>
+                  {!sidebarCollapsed && <span>Knowledge Library</span>}
+                </button>
+
+                {/* Upload Knowledge - Stitch 5 */}
+                <button
+                  type="button"
+                  className={`sidebar-nav-link ${currentSection === 'upload' ? 'active' : ''}`}
+                  onClick={() => {
+                    if (!userSession) setAuthModalOpen(true);
+                    setCurrentSection('upload');
+                  }}
+                  title="Upload Knowledge"
+                >
+                  <span className="material-symbols-outlined">cloud_upload</span>
+                  {!sidebarCollapsed && <span>Upload Knowledge</span>}
+                </button>
+              </div>
+
+              {/* Governance & Operations - ADMIN ONLY */}
+              {isAdmin && (
+                <div className="sidebar-nav-group">
+                  {!sidebarCollapsed && <span className="sidebar-group-title">GOVERNANCE & ADMIN</span>}
+
+                  <button
+                    type="button"
+                    className={`sidebar-nav-link ${currentSection === 'employees' ? 'active' : ''}`}
+                    onClick={() => {
+                      if (!userSession) setAuthModalOpen(true);
+                      setCurrentSection('employees');
+                    }}
+                    title="Employees Directory"
+                  >
+                    <span className="material-symbols-outlined">group</span>
+                    {!sidebarCollapsed && <span>Employees</span>}
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`sidebar-nav-link ${currentSection === 'sources' ? 'active' : ''}`}
+                    onClick={() => {
+                      if (!userSession) setAuthModalOpen(true);
+                      setCurrentSection('sources');
+                    }}
+                    title="Knowledge Sources"
+                  >
+                    <span className="material-symbols-outlined">folder_managed</span>
+                    {!sidebarCollapsed && <span>Knowledge Sources</span>}
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`sidebar-nav-link ${currentSection === 'settings' ? 'active' : ''}`}
+                    onClick={() => {
+                      if (!userSession) setAuthModalOpen(true);
+                      setCurrentSection('settings');
+                    }}
+                    title="System Settings & Security"
+                  >
+                    <span className="material-symbols-outlined">settings</span>
+                    {!sidebarCollapsed && <span>Settings &amp; Security</span>}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </nav>
 
@@ -1247,10 +1607,29 @@ export default function App() {
 
       {/* ── Main App Work Area ── */}
       <div className="stitch-main-area">
+        {/* ── Platform Maintenance Banner (When Super Admin toggles maintenance) ── */}
+        {maintenanceMode && (
+          <div style={{ background: 'linear-gradient(90deg, #991b1b, #dc2626)', color: '#fff', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, boxShadow: '0 2px 10px rgba(220, 38, 38, 0.4)', zIndex: 100 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '20px', animation: 'spin 4s linear infinite' }}>warning</span>
+              <span>PLATFORM MAINTENANCE ACTIVE &mdash; Read-only mode enforced globally across all tenant workspaces.</span>
+            </div>
+            {isSuperAdmin && (
+              <button 
+                type="button" 
+                onClick={() => setMaintenanceMode(false)}
+                style={{ background: 'rgba(255,255,255,0.25)', border: '1px solid rgba(255,255,255,0.5)', color: '#fff', padding: '3px 10px', borderRadius: '5px', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
+              >
+                Disable Maintenance Mode
+              </button>
+            )}
+          </div>
+        )}
+
         {/* ── Top Header ── */}
         <header className="stitch-topbar">
           <div className="topbar-page-info">
-            <span className="topbar-breadcrumb">{isAdmin ? 'ADMIN' : 'EMPLOYEE'}</span>
+            <span className="topbar-breadcrumb">{isSuperAdmin ? 'SUPER ADMIN' : isCompanyAdmin ? 'COMPANY ADMIN' : 'EMPLOYEE'}</span>
             <span className="topbar-divider">/</span>
             <h2 className="topbar-page-title">
               {currentSection === 'overview' && 'Operational Governance & Overview'}
@@ -1262,6 +1641,13 @@ export default function App() {
               {currentSection === 'employees' && 'Enterprise Personnel Directory'}
               {currentSection === 'sources' && 'Enterprise Connectors & Storage'}
               {currentSection === 'settings' && 'System Configuration & Security'}
+              {currentSection === 'super-admin' && 'Platform Command Center'}
+              {currentSection === 'sa-tenants' && 'Tenant Workspaces & Organizations'}
+              {currentSection === 'sa-users' && 'Cross-Tenant Platform Users'}
+              {currentSection === 'sa-infrastructure' && 'Service Mesh & Infrastructure Health'}
+              {currentSection === 'sa-config' && 'Global System Configuration'}
+              {currentSection === 'sa-audit' && 'Platform Audit Trail & Security Compliance'}
+              {currentSection === 'sa-danger' && 'Danger Zone & Maintenance Controls'}
             </h2>
           </div>
 
@@ -1277,30 +1663,34 @@ export default function App() {
               />
             </form>
 
-            {/* Quick Role Switcher Pill in Topbar */}
+            {/* Quick Role Switcher Pill in Topbar (3-Way Cycle) */}
             <button 
               type="button"
               className="status-pill"
               style={{ 
-                background: isAdmin ? 'var(--color-primary-fixed)' : 'var(--color-success-container)',
-                color: isAdmin ? 'var(--color-primary)' : 'var(--color-success)',
+                background: isSuperAdmin ? '#f3e8ff' : isCompanyAdmin ? '#dbeafe' : '#dcfce7',
+                color: isSuperAdmin ? '#7c3aed' : isCompanyAdmin ? '#1d4ed8' : '#15803d',
+                border: `1px solid ${isSuperAdmin ? '#c084fc' : isCompanyAdmin ? '#93c5fd' : '#86efac'}`,
                 cursor: 'pointer',
-                border: 'none',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px'
+                gap: '6px',
+                fontWeight: 600,
+                fontSize: '12px'
               }}
               onClick={() => {
-                const nextRole = isAdmin ? 'employee' : 'admin';
+                const nextRole = isSuperAdmin ? 'company-admin' : isCompanyAdmin ? 'employee' : 'super-admin';
                 setRoleOverride(nextRole);
-                setCurrentSection(nextRole === 'admin' ? 'overview' : 'employee-portal');
+                if (nextRole === 'super-admin') setCurrentSection('super-admin');
+                else if (nextRole === 'company-admin') setCurrentSection('overview');
+                else setCurrentSection('employee-portal');
               }}
-              title="Click to toggle between Admin and Employee view"
+              title="Click to cycle between Super Admin, Company Admin, and Employee roles"
             >
-              <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
-                {isAdmin ? 'admin_panel_settings' : 'badge'}
+              <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>
+                {isSuperAdmin ? 'security' : isCompanyAdmin ? 'admin_panel_settings' : 'badge'}
               </span>
-              {isAdmin ? 'Mode: Admin' : 'Mode: Employee'} ⇄
+              {isSuperAdmin ? 'Role: Super Admin ⇄' : isCompanyAdmin ? 'Role: Company Admin ⇄' : 'Role: Employee ⇄'}
             </button>
 
             <span className={`status-pill ${healthData?.status === 'healthy' ? 'pill-healthy' : 'pill-degraded'}`}>
@@ -2914,52 +3304,147 @@ export default function App() {
               )}
 
               {activeTab === 'login' ? (
-                <form onSubmit={handleLogin} className="form-stack">
-                  <div className="form-group">
-                    <label>Company Tenant Slug (Optional for Global)</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. acme-corp"
-                      value={loginForm.companySlug}
-                      onChange={(e) => setLoginForm({ ...loginForm, companySlug: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Email Address</label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="email@company.com"
-                      value={loginForm.email}
-                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Password</label>
-                    <div style={{ position: 'relative' }}>
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        placeholder="••••••••"
-                        value={loginForm.password}
-                        onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                        style={{ width: '100%' }}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-outline)' }}
+                <div>
+                  {/* 3 Core Login Personas Selector */}
+                  <div style={{ marginBottom: '14px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-outline)', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+                      <span>Select Login Type / Persona</span>
+                      <span style={{ fontSize: '10px', color: 'var(--color-primary)', fontWeight: 600 }}>1-Click Ready</span>
+                    </div>
+                    <div className="persona-card-grid">
+                      <div 
+                        className={`persona-card ${selectedLoginPersona === 'super-admin' ? 'selected super-admin' : ''}`}
+                        onClick={() => {
+                          setSelectedLoginPersona('super-admin');
+                          setLoginForm({
+                            email: 'superadmin@platform.ai',
+                            password: 'Password123!',
+                            companySlug: '',
+                          });
+                        }}
                       >
-                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-                          {showPassword ? 'visibility_off' : 'visibility'}
-                        </span>
-                      </button>
+                        <span className="material-symbols-outlined persona-icon" style={{ color: '#a855f7' }}>security</span>
+                        <span className="persona-title">Super Admin</span>
+                        <span className="persona-subtitle">Global Platform</span>
+                      </div>
+
+                      <div 
+                        className={`persona-card ${selectedLoginPersona === 'company-admin' ? 'selected company-admin' : ''}`}
+                        onClick={() => {
+                          setSelectedLoginPersona('company-admin');
+                          setLoginForm({
+                            email: 'admin@apexengineering.demo',
+                            password: 'Password123!',
+                            companySlug: 'apex-engineering',
+                          });
+                        }}
+                      >
+                        <span className="material-symbols-outlined persona-icon" style={{ color: '#3b82f6' }}>admin_panel_settings</span>
+                        <span className="persona-title">Company Admin</span>
+                        <span className="persona-subtitle">Apex Engineering</span>
+                      </div>
+
+                      <div 
+                        className={`persona-card ${selectedLoginPersona === 'employee' ? 'selected employee' : ''}`}
+                        onClick={() => {
+                          setSelectedLoginPersona('employee');
+                          setLoginForm({
+                            email: 'employee@apexengineering.demo',
+                            password: 'Password123!',
+                            companySlug: 'apex-engineering',
+                          });
+                        }}
+                      >
+                        <span className="material-symbols-outlined persona-icon" style={{ color: '#10b981' }}>badge</span>
+                        <span className="persona-title">Employee</span>
+                        <span className="persona-subtitle">Knowledge Portal</span>
+                      </div>
+                    </div>
+
+                    {/* Instant Demo Sign-In Shortcut Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleQuickDemoLogin(selectedLoginPersona)}
+                      style={{
+                        width: '100%',
+                        padding: '9px 12px',
+                        background: selectedLoginPersona === 'super-admin' 
+                          ? 'linear-gradient(135deg, #7e22ce, #a855f7)'
+                          : selectedLoginPersona === 'company-admin'
+                          ? 'linear-gradient(135deg, #1d4ed8, #3b82f6)'
+                          : 'linear-gradient(135deg, #047857, #10b981)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: 'var(--radius-sm)',
+                        fontWeight: 600,
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                        marginBottom: '14px'
+                      }}
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>bolt</span>
+                      Instant Sign In as {selectedLoginPersona === 'super-admin' ? 'Super Admin' : selectedLoginPersona === 'company-admin' ? 'Company Admin' : 'Employee'}
+                    </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: '10px 0 14px' }}>
+                      <div style={{ flex: 1, height: '1px', background: 'var(--color-outline-variant)' }}></div>
+                      <span style={{ fontSize: '10.5px', color: 'var(--color-outline)', fontWeight: 600 }}>OR AUTHENTICATE VIA LIVE API</span>
+                      <div style={{ flex: 1, height: '1px', background: 'var(--color-outline-variant)' }}></div>
                     </div>
                   </div>
-                  <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '12px' }} disabled={authLoading}>
-                    {authLoading ? 'Signing In...' : 'Sign In ➔'}
-                  </button>
-                </form>
+
+                  <form onSubmit={handleLogin} className="form-stack">
+                    <div className="form-group">
+                      <label>Company Tenant Slug (Optional for Super Admin)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. apex-engineering"
+                        value={loginForm.companySlug}
+                        onChange={(e) => setLoginForm({ ...loginForm, companySlug: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Email Address</label>
+                      <input
+                        type="email"
+                        required
+                        placeholder="email@company.com"
+                        value={loginForm.email}
+                        onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Password</label>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          placeholder="••••••••"
+                          value={loginForm.password}
+                          onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                          style={{ width: '100%' }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--color-outline)' }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                            {showPassword ? 'visibility_off' : 'visibility'}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                    <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '12px' }} disabled={authLoading}>
+                      {authLoading ? 'Authenticating...' : 'Sign In via Live API ➔'}
+                    </button>
+                  </form>
+                </div>
               ) : (
                 <form onSubmit={handleRegister} className="form-stack">
                   <div className="form-group">
@@ -3205,8 +3690,1041 @@ export default function App() {
         </div>
       )}
 
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── SUPER ADMIN SECTION 1: Platform Command Center ── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {currentSection === 'super-admin' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Super Admin Hero Banner */}
+          <section className="stitch-hero-banner" style={{ background: 'linear-gradient(135deg, #1a0533 0%, #2d1b69 40%, #6c2bd9 100%)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '28px', color: '#f0abfc' }}>security</span>
+              <h2 className="stitch-hero-title" style={{ margin: 0, fontSize: '26px' }}>Platform Command Center</h2>
+            </div>
+            <p className="stitch-hero-subtitle" style={{ maxWidth: '700px' }}>
+              Global multi-tenant oversight &mdash; manage enterprise workspaces, cross-tenant users, service mesh health, and security controls.
+            </p>
+            <div className="stitch-hero-actions">
+              <button className="btn-primary" style={{ background: '#a855f7', borderColor: '#a855f7' }} onClick={() => setNewTenantModalOpen(true)}>
+                <span className="material-symbols-outlined">add_business</span>
+                Register New Tenant
+              </button>
+              <button className="btn-secondary" style={{ background: 'rgba(255,255,255,0.12)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)' }} onClick={() => setNewUserModalOpen(true)}>
+                <span className="material-symbols-outlined">person_add</span>
+                Create Platform User
+              </button>
+              <button className="btn-secondary" style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }} onClick={handleExportAuditLogs}>
+                <span className="material-symbols-outlined">download</span>
+                Export Audit Report
+              </button>
+              <button className="btn-secondary" style={{ background: 'rgba(255,255,255,0.08)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }} onClick={() => setCurrentSection('sa-infrastructure')}>
+                <span className="material-symbols-outlined">dns</span>
+                Inspect Mesh Health
+              </button>
+            </div>
+          </section>
+
+          {/* Platform-Wide KPI Cards */}
+          <div className="stats-row">
+            <div className="stat-card" style={{ borderTop: '3px solid #a855f7', cursor: 'pointer' }} onClick={() => setCurrentSection('sa-tenants')}>
+              <div className="stat-header">
+                <span className="stat-label">Total Tenants</span>
+                <div className="stat-icon-wrap" style={{ background: '#f3e8ff', color: '#7c3aed' }}>
+                  <span className="material-symbols-outlined">corporate_fare</span>
+                </div>
+              </div>
+              <div className="stat-value">{tenantsList.length}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="stat-velocity">● {tenantsList.filter(t => t.status === 'active').length} Active</span>
+                <span style={{ fontSize: '11px', color: 'var(--color-primary)' }}>Manage Tenants ➔</span>
+              </div>
+              <div className="stat-progress-bar"><div className="stat-progress-fill" style={{ width: '100%', background: '#a855f7' }}></div></div>
+            </div>
+
+            <div className="stat-card" style={{ borderTop: '3px solid #3b82f6', cursor: 'pointer' }} onClick={() => setCurrentSection('sa-users')}>
+              <div className="stat-header">
+                <span className="stat-label">Platform Users</span>
+                <div className="stat-icon-wrap" style={{ background: '#dbeafe', color: '#2563eb' }}>
+                  <span className="material-symbols-outlined">supervised_user_circle</span>
+                </div>
+              </div>
+              <div className="stat-value">{platformUsersList.length}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="stat-velocity">Across {tenantsList.length} Tenants</span>
+                <span style={{ fontSize: '11px', color: 'var(--color-primary)' }}>Manage Users ➔</span>
+              </div>
+              <div className="stat-progress-bar"><div className="stat-progress-fill" style={{ width: '85%', background: '#3b82f6' }}></div></div>
+            </div>
+
+            <div className="stat-card" style={{ borderTop: '3px solid #10b981' }}>
+              <div className="stat-header">
+                <span className="stat-label">Global Documents</span>
+                <div className="stat-icon-wrap" style={{ background: '#d1fae5', color: '#059669' }}>
+                  <span className="material-symbols-outlined">folder_open</span>
+                </div>
+              </div>
+              <div className="stat-value">{docStats.total || 69}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="stat-velocity">{docStats.indexed || 65} Indexed</span>
+                <span style={{ fontSize: '11px', color: 'var(--color-outline)' }}>{docStats.pending || 4} Pending</span>
+              </div>
+              <div className="stat-progress-bar"><div className="stat-progress-fill" style={{ width: '94%', background: '#10b981' }}></div></div>
+            </div>
+
+            <div className="stat-card" style={{ borderTop: '3px solid #f59e0b' }}>
+              <div className="stat-header">
+                <span className="stat-label">Total Vectors</span>
+                <div className="stat-icon-wrap" style={{ background: '#fef3c7', color: '#d97706' }}>
+                  <span className="material-symbols-outlined">hub</span>
+                </div>
+              </div>
+              <div className="stat-value">{docStats.totalVectors || docStats.totalChunks || 842}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="stat-velocity">ChromaDB Store</span>
+                <span style={{ fontSize: '11px', color: 'var(--color-outline)' }}>Embedding Engine</span>
+              </div>
+              <div className="stat-progress-bar"><div className="stat-progress-fill" style={{ width: '88%', background: '#f59e0b' }}></div></div>
+            </div>
+
+            <div className="stat-card" style={{ borderTop: '3px solid #06b6d4', cursor: 'pointer' }} onClick={() => setCurrentSection('sa-infrastructure')}>
+              <div className="stat-header">
+                <span className="stat-label">Service Mesh</span>
+                <div className="stat-icon-wrap" style={{ background: '#cffafe', color: '#0891b2' }}>
+                  <span className="material-symbols-outlined">dns</span>
+                </div>
+              </div>
+              <div className="stat-value" style={{ color: '#06b6d4' }}>4 / 4</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="stat-velocity">● Mesh Healthy</span>
+                <span style={{ fontSize: '11px', color: 'var(--color-primary)' }}>Live Probes ➔</span>
+              </div>
+              <div className="stat-progress-bar"><div className="stat-progress-fill" style={{ width: '100%', background: '#06b6d4' }}></div></div>
+            </div>
+
+            <div className="stat-card" style={{ borderTop: '3px solid #ec4899', cursor: 'pointer' }} onClick={() => setCurrentSection('sa-danger')}>
+              <div className="stat-header">
+                <span className="stat-label">Platform State</span>
+                <div className="stat-icon-wrap" style={{ background: maintenanceMode ? '#fee2e2' : '#fce7f3', color: maintenanceMode ? '#dc2626' : '#db2777' }}>
+                  <span className="material-symbols-outlined">{maintenanceMode ? 'warning' : 'verified'}</span>
+                </div>
+              </div>
+              <div className="stat-value" style={{ fontSize: '20px', color: maintenanceMode ? '#ef4444' : '#10b981', paddingTop: '4px' }}>
+                {maintenanceMode ? 'Maintenance' : 'Production'}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="stat-velocity">{maintenanceMode ? 'Read-Only' : 'All Systems Active'}</span>
+                <span style={{ fontSize: '11px', color: 'var(--color-primary)' }}>Danger Zone ➔</span>
+              </div>
+              <div className="stat-progress-bar"><div className="stat-progress-fill" style={{ width: '100%', background: maintenanceMode ? '#ef4444' : '#10b981' }}></div></div>
+            </div>
+          </div>
+
+          {/* Quick Snapshot: Tenants & Users side by side */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '20px' }}>
+            {/* Recent Tenants Card */}
+            <section className="data-section-card super-admin-section">
+              <div className="section-title">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span className="material-symbols-outlined" style={{ color: '#a855f7' }}>corporate_fare</span>
+                  <span>Registered Tenants ({tenantsList.length})</span>
+                </div>
+                <button className="btn-secondary btn-sm" onClick={() => setCurrentSection('sa-tenants')}>
+                  View All Tenants ➔
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
+                {tenantsList.slice(0, 3).map((tenant) => (
+                  <div key={tenant.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--color-surface-variant)', borderRadius: '10px', border: '1px solid var(--color-outline-variant)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #a855f7, #6366f1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '13px' }}>
+                        {tenant.code}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '13.5px' }}>{tenant.name}</div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-outline)' }}>Admin: {tenant.admin} &bull; {tenant.docs} Docs</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className={`status-badge ${tenant.status === 'active' ? 'badge-healthy' : 'badge-degraded'}`}>{tenant.status}</span>
+                      <button 
+                        type="button"
+                        className="btn-action-icon"
+                        onClick={() => handleToggleTenantStatus(tenant.id)}
+                        title={tenant.status === 'active' ? 'Suspend Tenant' : 'Activate Tenant'}
+                        style={{ color: tenant.status === 'active' ? '#ef4444' : '#10b981' }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                          {tenant.status === 'active' ? 'block' : 'check_circle'}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Quick Platform Users Card */}
+            <section className="data-section-card super-admin-section">
+              <div className="section-title">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span className="material-symbols-outlined" style={{ color: '#3b82f6' }}>supervised_user_circle</span>
+                  <span>Platform Users Snapshot ({platformUsersList.length})</span>
+                </div>
+                <button className="btn-secondary btn-sm" onClick={() => setCurrentSection('sa-users')}>
+                  View All Users ➔
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '16px' }}>
+                {platformUsersList.slice(0, 3).map((user) => (
+                  <div key={user.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--color-surface-variant)', borderRadius: '10px', border: '1px solid var(--color-outline-variant)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div className="user-avatar-sm" style={{ background: user.role === 'Super Admin' ? 'linear-gradient(135deg, #7e22ce, #a855f7)' : user.role === 'Company Admin' ? 'linear-gradient(135deg, #1d4ed8, #3b82f6)' : 'linear-gradient(135deg, #047857, #10b981)' }}>
+                        {user.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '13.5px' }}>{user.name}</div>
+                        <div style={{ fontSize: '11.5px', color: 'var(--color-outline)' }}>{user.email} &bull; {user.company}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span className="status-badge" style={{ background: user.role === 'Super Admin' ? '#f3e8ff' : user.role === 'Company Admin' ? '#dbeafe' : '#dcfce7', color: user.role === 'Super Admin' ? '#7c3aed' : user.role === 'Company Admin' ? '#1d4ed8' : '#15803d', fontSize: '11px' }}>
+                        {user.role}
+                      </span>
+                      <button 
+                        type="button"
+                        className="btn-action-icon"
+                        onClick={() => handleResetUserPassword(user.email)}
+                        title="Send Password Reset"
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>lock_reset</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── SUPER ADMIN SECTION 2: Tenant Workspaces Management ── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {currentSection === 'sa-tenants' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)' }}>Tenant Workspaces &amp; Organizations</h2>
+              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-outline)' }}>Provision, configure, and isolate multi-tenant industrial workspaces across the platform.</p>
+            </div>
+            <button className="btn-primary" style={{ background: '#a855f7', borderColor: '#a855f7' }} onClick={() => setNewTenantModalOpen(true)}>
+              <span className="material-symbols-outlined">add_business</span>
+              Provision New Tenant
+            </button>
+          </div>
+
+          {/* Filter Bar */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'var(--color-surface)', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--color-outline-variant)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+              <span className="material-symbols-outlined" style={{ color: 'var(--color-outline)' }}>search</span>
+              <input
+                type="text"
+                placeholder="Search by company name, slug, or code..."
+                value={tenantSearch}
+                onChange={(e) => setTenantSearch(e.target.value)}
+                style={{ border: 'none', background: 'transparent', width: '100%', fontSize: '13.5px', outline: 'none', color: 'var(--color-on-surface)' }}
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '12px', color: 'var(--color-outline)' }}>Status:</span>
+              <select
+                value={tenantStatusFilter}
+                onChange={(e) => setTenantStatusFilter(e.target.value)}
+                style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', background: 'var(--color-surface-variant)', color: 'var(--color-on-surface)', fontSize: '12px' }}
+              >
+                <option value="all">All Statuses</option>
+                <option value="active">Active Only</option>
+                <option value="suspended">Suspended Only</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Tenants Table */}
+          <section className="data-section-card super-admin-section">
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Organization</th>
+                    <th>Slug</th>
+                    <th>Code</th>
+                    <th>Tier</th>
+                    <th>Admin Email</th>
+                    <th>Users</th>
+                    <th>Documents</th>
+                    <th>Status</th>
+                    <th>Provisioned</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tenantsList
+                    .filter(t => {
+                      const matchQuery = t.name.toLowerCase().includes(tenantSearch.toLowerCase()) ||
+                        t.slug.toLowerCase().includes(tenantSearch.toLowerCase()) ||
+                        t.code.toLowerCase().includes(tenantSearch.toLowerCase());
+                      const matchStatus = tenantStatusFilter === 'all' || t.status === tenantStatusFilter;
+                      return matchQuery && matchStatus;
+                    })
+                    .map((tenant) => (
+                      <tr key={tenant.id}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #a855f7, #6366f1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '13px' }}>
+                              {tenant.code}
+                            </div>
+                            <span style={{ fontWeight: 600 }}>{tenant.name}</span>
+                          </div>
+                        </td>
+                        <td><code>{tenant.slug}</code></td>
+                        <td><span className="status-badge badge-info">{tenant.code}</span></td>
+                        <td><span style={{ fontSize: '12px', fontWeight: 600, color: '#a855f7' }}>{tenant.tier}</span></td>
+                        <td style={{ fontSize: '13px' }}>{tenant.admin}</td>
+                        <td><strong>{tenant.users}</strong></td>
+                        <td><strong>{tenant.docs}</strong></td>
+                        <td>
+                          <span className={`status-badge ${tenant.status === 'active' ? 'badge-healthy' : 'badge-degraded'}`}>
+                            {tenant.status}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '12px', color: 'var(--color-outline)' }}>{tenant.created}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              className="btn-action-icon"
+                              title={tenant.status === 'active' ? 'Suspend Tenant' : 'Activate Tenant'}
+                              onClick={() => handleToggleTenantStatus(tenant.id)}
+                              style={{ color: tenant.status === 'active' ? '#ef4444' : '#10b981' }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                                {tenant.status === 'active' ? 'block' : 'check_circle'}
+                              </span>
+                            </button>
+                            <button
+                              className="btn-action-icon"
+                              title="Tenant Details"
+                              onClick={() => alert(`Tenant: ${tenant.name}\nCode: ${tenant.code}\nTier: ${tenant.tier}\nAdmin: ${tenant.admin}\nUsers: ${tenant.users}\nDocs: ${tenant.docs}\nStatus: ${tenant.status}`)}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>visibility</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── SUPER ADMIN SECTION 3: Cross-Tenant Platform Users ── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {currentSection === 'sa-users' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)' }}>Platform Users Directory</h2>
+              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-outline)' }}>Manage all administrative and employee accounts across all registered tenant workspaces.</p>
+            </div>
+            <button className="btn-primary" style={{ background: '#3b82f6', borderColor: '#3b82f6' }} onClick={() => setNewUserModalOpen(true)}>
+              <span className="material-symbols-outlined">person_add</span>
+              Create Platform User
+            </button>
+          </div>
+
+          {/* User Search & Filter */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'var(--color-surface)', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--color-outline-variant)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+              <span className="material-symbols-outlined" style={{ color: 'var(--color-outline)' }}>search</span>
+              <input
+                type="text"
+                placeholder="Search by user name, email, or company..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                style={{ border: 'none', background: 'transparent', width: '100%', fontSize: '13.5px', outline: 'none', color: 'var(--color-on-surface)' }}
+              />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '12px', color: 'var(--color-outline)' }}>Role:</span>
+              <select
+                value={userRoleFilter}
+                onChange={(e) => setUserRoleFilter(e.target.value)}
+                style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--color-outline-variant)', background: 'var(--color-surface-variant)', color: 'var(--color-on-surface)', fontSize: '12px' }}
+              >
+                <option value="all">All Roles</option>
+                <option value="Super Admin">Super Admin</option>
+                <option value="Company Admin">Company Admin</option>
+                <option value="Employee">Employee</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Platform Users Table */}
+          <section className="data-section-card super-admin-section">
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Tenant Workspace</th>
+                    <th>Platform Role</th>
+                    <th>Status</th>
+                    <th>Last Active</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {platformUsersList
+                    .filter(u => {
+                      const matchQuery = u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+                        u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
+                        u.company.toLowerCase().includes(userSearch.toLowerCase());
+                      const matchRole = userRoleFilter === 'all' || u.role === userRoleFilter;
+                      return matchQuery && matchRole;
+                    })
+                    .map((user) => (
+                      <tr key={user.id}>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div className="user-avatar-sm" style={{ background: user.role === 'Super Admin' ? 'linear-gradient(135deg, #7e22ce, #a855f7)' : user.role === 'Company Admin' ? 'linear-gradient(135deg, #1d4ed8, #3b82f6)' : 'linear-gradient(135deg, #047857, #10b981)' }}>
+                              {user.name.charAt(0)}
+                            </div>
+                            <span style={{ fontWeight: 600 }}>{user.name}</span>
+                          </div>
+                        </td>
+                        <td style={{ fontSize: '13px' }}>{user.email}</td>
+                        <td><span className="status-badge badge-info">{user.company}</span></td>
+                        <td>
+                          <span className="status-badge" style={{ background: user.role === 'Super Admin' ? '#f3e8ff' : user.role === 'Company Admin' ? '#dbeafe' : '#dcfce7', color: user.role === 'Super Admin' ? '#7c3aed' : user.role === 'Company Admin' ? '#1d4ed8' : '#15803d' }}>
+                            {user.role}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`status-badge ${user.status === 'active' ? 'badge-healthy' : 'badge-degraded'}`}>
+                            {user.status}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '12px', color: 'var(--color-outline)' }}>{user.lastActive}</td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              className="btn-action-icon"
+                              title="Reset Password"
+                              onClick={() => handleResetUserPassword(user.email)}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>lock_reset</span>
+                            </button>
+                            <button
+                              className="btn-action-icon"
+                              title={user.status === 'active' ? 'Deactivate User' : 'Activate User'}
+                              onClick={() => handleToggleUserStatus(user.id)}
+                              style={{ color: user.status === 'active' ? '#ef4444' : '#10b981' }}
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+                                {user.status === 'active' ? 'person_off' : 'person'}
+                              </span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── SUPER ADMIN SECTION 4: Service Mesh & Infrastructure ── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {currentSection === 'sa-infrastructure' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)' }}>Service Mesh &amp; Infrastructure Health</h2>
+              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-outline)' }}>Live telemetry and status monitoring for all distributed backend microservices and vector databases.</p>
+            </div>
+            <button className="btn-primary" style={{ background: '#06b6d4', borderColor: '#06b6d4' }} onClick={handleRunMeshProbe} disabled={probeLoading}>
+              <span className="material-symbols-outlined">{probeLoading ? 'sync' : 'network_ping'}</span>
+              {probeLoading ? 'Probing Services...' : 'Trigger Deep Mesh Probe'}
+            </button>
+          </div>
+
+          {/* Probe Live Result Banner */}
+          {probeResult && (
+            <div style={{ background: 'rgba(6, 182, 212, 0.1)', border: '1px solid #06b6d4', padding: '12px 16px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span className="material-symbols-outlined" style={{ color: '#06b6d4' }}>check_circle</span>
+                <span>Probe completed in <strong>{probeResult.latency} ms</strong> at {probeResult.time}. All core microservices responded with HTTP 200 OK.</span>
+              </div>
+              <button className="btn-action-icon" onClick={() => setProbeResult(null)}><span className="material-symbols-outlined">close</span></button>
+            </div>
+          )}
+
+          {/* Services Grid */}
+          <div className="services-grid">
+            <div className="service-card">
+              <div className="service-header">
+                <div className="service-name">
+                  <span className="material-symbols-outlined text-primary">lan</span> Node.js API Gateway
+                </div>
+                <span className={`status-badge ${getServiceBadgeClass(healthData?.services?.backend)}`}>
+                  {healthData?.services?.backend?.toUpperCase() || 'ONLINE'}
+                </span>
+              </div>
+              <div className="service-meta">
+                <span>Port: <strong>5000</strong></span>
+                <span>Runtime: <strong>Node 22</strong></span>
+                <span>Protocol: <strong>REST / Express</strong></span>
+                <span>Latency: <strong>4 ms</strong></span>
+              </div>
+            </div>
+
+            <div className="service-card">
+              <div className="service-header">
+                <div className="service-name">
+                  <span className="material-symbols-outlined text-primary">neurology</span> FastAPI AI Engine
+                </div>
+                <span className={`status-badge ${getServiceBadgeClass(healthData?.services?.aiService)}`}>
+                  {healthData?.services?.aiService?.toUpperCase() || 'HEALTHY'}
+                </span>
+              </div>
+              <div className="service-meta">
+                <span>Port: <strong>8002</strong></span>
+                <span>Framework: <strong>Uvicorn</strong></span>
+                <span>LLM Engine: <strong>Gemini 2.0</strong></span>
+                <span>Latency: <strong>11 ms</strong></span>
+              </div>
+            </div>
+
+            <div className="service-card">
+              <div className="service-header">
+                <div className="service-name">
+                  <span className="material-symbols-outlined text-primary">database</span> MongoDB Cluster
+                </div>
+                <span className={`status-badge ${getServiceBadgeClass(healthData?.services?.database)}`}>
+                  {healthData?.services?.database?.toUpperCase() || 'CONNECTED'}
+                </span>
+              </div>
+              <div className="service-meta">
+                <span>Driver: <strong>Mongoose 9</strong></span>
+                <span>Tenants Isolated: <strong>{tenantsList.length}</strong></span>
+                <span>Status: <strong>Active</strong></span>
+                <span>Pool Size: <strong>10</strong></span>
+              </div>
+            </div>
+
+            <div className="service-card">
+              <div className="service-header">
+                <div className="service-name">
+                  <span className="material-symbols-outlined text-primary">hub</span> ChromaDB Vector Store
+                </div>
+                <span className={`status-badge ${getServiceBadgeClass(healthData?.services?.chromadb)}`}>
+                  {healthData?.services?.chromadb?.toUpperCase() || 'READY'}
+                </span>
+              </div>
+              <div className="service-meta">
+                <span>Port: <strong>8000</strong></span>
+                <span>Total Vectors: <strong>{docStats.totalVectors || 842}</strong></span>
+                <span>Distance Metric: <strong>Cosine</strong></span>
+                <span>Collection: <strong>Multi-Tenant</strong></span>
+              </div>
+            </div>
+          </div>
+
+          {/* Raw Diagnostic Payload Inspector */}
+          <section className="data-section-card super-admin-section">
+            <div className="section-title">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined" style={{ color: '#06b6d4' }}>code</span>
+                <span>Live Health Diagnostic Payload (`GET /api/v1/health`)</span>
+              </div>
+              <button className="btn-secondary btn-sm" onClick={fetchHealth}>Refresh Payload</button>
+            </div>
+            <pre style={{ marginTop: '14px', padding: '16px', background: 'var(--color-surface-container-lowest)', borderRadius: '10px', fontSize: '12px', overflowX: 'auto', color: 'var(--color-on-surface)' }}>
+              {JSON.stringify(healthData || { status: 'healthy', services: { backend: 'up', aiService: 'up', database: 'connected', chromadb: 'ready' }, timestamp: new Date().toISOString() }, null, 2)}
+            </pre>
+          </section>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── SUPER ADMIN SECTION 5: Global System Configuration ── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {currentSection === 'sa-config' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)' }}>Global System Configuration</h2>
+              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-outline)' }}>Configure platform-wide execution parameters, AI model selections, and storage quotas.</p>
+            </div>
+            <button className="btn-secondary" onClick={() => {
+              setGlobalConfig({
+                aiModel: 'Gemini 2.0 Flash',
+                maxUploadSizeMB: '50 MB',
+                chunkSize: '1000 tokens',
+                defaultTopK: '5',
+                authMethod: 'JWT + Refresh Token (HttpOnly)',
+                encryption: 'bcrypt (12 rounds) + AES-256',
+                sessionTimeout: '24 hours',
+                ocrEngine: 'Tesseract 5.0 (Active)',
+              });
+              alert('Configuration reset to factory defaults.');
+            }}>
+              <span className="material-symbols-outlined">restart_alt</span>
+              Reset to Defaults
+            </button>
+          </div>
+
+          {configFeedback && (
+            <div className="feedback-alert feedback-success">
+              <span>{configFeedback}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSaveGlobalConfig} className="data-section-card super-admin-section form-stack">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+              <div className="form-group">
+                <label>Primary LLM Engine</label>
+                <select value={globalConfig.aiModel} onChange={(e) => setGlobalConfig({ ...globalConfig, aiModel: e.target.value })}>
+                  <option value="Gemini 2.0 Flash">Gemini 2.0 Flash (Recommended, High Speed)</option>
+                  <option value="Gemini 1.5 Pro">Gemini 1.5 Pro (Deep Context RAG)</option>
+                  <option value="Claude 3.5 Sonnet">Claude 3.5 Sonnet (Advanced Reasoning)</option>
+                  <option value="GPT-4o">GPT-4o (OpenAI Alternative)</option>
+                </select>
+                <span style={{ fontSize: '11px', color: 'var(--color-outline)' }}>Model serving all RAG query synthesis and chat streams</span>
+              </div>
+
+              <div className="form-group">
+                <label>Per-File Max Upload Limit</label>
+                <select value={globalConfig.maxUploadSizeMB} onChange={(e) => setGlobalConfig({ ...globalConfig, maxUploadSizeMB: e.target.value })}>
+                  <option value="25 MB">25 MB (Standard)</option>
+                  <option value="50 MB">50 MB (Recommended)</option>
+                  <option value="100 MB">100 MB (Enterprise)</option>
+                  <option value="200 MB">200 MB (Heavy CAD/PDF)</option>
+                </select>
+                <span style={{ fontSize: '11px', color: 'var(--color-outline)' }}>Enforced globally across all document ingestion pipelines</span>
+              </div>
+
+              <div className="form-group">
+                <label>Document Chunk Size</label>
+                <select value={globalConfig.chunkSize} onChange={(e) => setGlobalConfig({ ...globalConfig, chunkSize: e.target.value })}>
+                  <option value="500 tokens">500 tokens (Granular chunking)</option>
+                  <option value="1000 tokens">1000 tokens (Balanced semantic boundary)</option>
+                  <option value="1500 tokens">1500 tokens (Broad context window)</option>
+                </select>
+                <span style={{ fontSize: '11px', color: 'var(--color-outline)' }}>Token window used during text chunking for vectorization</span>
+              </div>
+
+              <div className="form-group">
+                <label>Default Top-K Vector Matches</label>
+                <select value={globalConfig.defaultTopK} onChange={(e) => setGlobalConfig({ ...globalConfig, defaultTopK: e.target.value })}>
+                  <option value="3">Top 3 matches</option>
+                  <option value="5">Top 5 matches (Recommended)</option>
+                  <option value="8">Top 8 matches</option>
+                  <option value="12">Top 12 matches (Deep search)</option>
+                </select>
+                <span style={{ fontSize: '11px', color: 'var(--color-outline)' }}>Number of semantic segments returned to RAG prompter</span>
+              </div>
+
+              <div className="form-group">
+                <label>Session Expiry Duration</label>
+                <select value={globalConfig.sessionTimeout} onChange={(e) => setGlobalConfig({ ...globalConfig, sessionTimeout: e.target.value })}>
+                  <option value="8 hours">8 hours (High Security)</option>
+                  <option value="24 hours">24 hours (Standard Enterprise)</option>
+                  <option value="7 days">7 days (Extended Dev)</option>
+                </select>
+                <span style={{ fontSize: '11px', color: 'var(--color-outline)' }}>JWT Refresh Token validity window</span>
+              </div>
+
+              <div className="form-group">
+                <label>OCR Processing Engine</label>
+                <select value={globalConfig.ocrEngine} onChange={(e) => setGlobalConfig({ ...globalConfig, ocrEngine: e.target.value })}>
+                  <option value="Tesseract 5.0 (Active)">Tesseract 5.0 (Local Open-Source)</option>
+                  <option value="EasyOCR">EasyOCR (PyTorch Engine)</option>
+                  <option value="Cloud Vision API">Cloud Vision API (External)</option>
+                </select>
+                <span style={{ fontSize: '11px', color: 'var(--color-outline)' }}>Engine used to extract text from scanned schematics and PDFs</span>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button type="submit" className="btn-primary" style={{ background: '#a855f7', borderColor: '#a855f7' }}>
+                <span className="material-symbols-outlined">save</span>
+                Save Platform Configuration
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── SUPER ADMIN SECTION 6: Platform Audit Trail ── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {currentSection === 'sa-audit' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)' }}>Platform Audit Trail &amp; Compliance</h2>
+              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-outline)' }}>Immutable log of administrative actions, authentication attempts, and system modifications.</p>
+            </div>
+            <button className="btn-primary" style={{ background: '#a855f7', borderColor: '#a855f7' }} onClick={handleExportAuditLogs}>
+              <span className="material-symbols-outlined">download</span>
+              Export Audit Trail (JSON)
+            </button>
+          </div>
+
+          {/* Audit Search Bar */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'var(--color-surface)', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--color-outline-variant)' }}>
+            <span className="material-symbols-outlined" style={{ color: 'var(--color-outline)' }}>search</span>
+            <input
+              type="text"
+              placeholder="Filter audit events by actor, action, or target..."
+              value={auditSearch}
+              onChange={(e) => setAuditSearch(e.target.value)}
+              style={{ border: 'none', background: 'transparent', width: '100%', fontSize: '13.5px', outline: 'none', color: 'var(--color-on-surface)' }}
+            />
+          </div>
+
+          <section className="data-section-card super-admin-section">
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Event ID</th>
+                    <th>Time</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Target / Details</th>
+                    <th>IP Origin</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {saAuditLogsList
+                    .filter(log => {
+                      const matchQuery = log.actor.toLowerCase().includes(auditSearch.toLowerCase()) ||
+                        log.action.toLowerCase().includes(auditSearch.toLowerCase()) ||
+                        log.target.toLowerCase().includes(auditSearch.toLowerCase());
+                      return matchQuery;
+                    })
+                    .map((log) => (
+                      <tr key={log.id}>
+                        <td><code>{log.id}</code></td>
+                        <td style={{ fontSize: '12px', color: 'var(--color-outline)', whiteSpace: 'nowrap' }}>{log.time}</td>
+                        <td style={{ fontWeight: 600 }}>{log.actor}</td>
+                        <td>
+                          <span className="status-badge" style={{ background: '#f1f5f9', color: '#334155', fontSize: '11px', fontFamily: 'monospace' }}>
+                            {log.action}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '13px' }}>{log.target}</td>
+                        <td style={{ fontSize: '12px', color: 'var(--color-outline)' }}>{log.ip}</td>
+                        <td>
+                          <span className={`status-badge ${log.status === 'SUCCESS' ? 'badge-healthy' : log.status === 'WARN' ? 'badge-degraded' : 'badge-degraded'}`}>
+                            {log.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {/* ── SUPER ADMIN SECTION 7: Danger Zone & Maintenance ── */}
+      {/* ══════════════════════════════════════════════════════════════════════ */}
+      {currentSection === 'sa-danger' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: '#ef4444' }}>Danger Zone &amp; Maintenance Operations</h2>
+            <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-outline)' }}>High-privilege actions affecting all tenants, vector databases, and system availability.</p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Maintenance Mode Card */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', background: 'var(--color-surface)', borderRadius: '12px', border: maintenanceMode ? '2px solid #ef4444' : '1px solid var(--color-outline-variant)' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="material-symbols-outlined" style={{ color: maintenanceMode ? '#ef4444' : '#f59e0b' }}>
+                    {maintenanceMode ? 'warning' : 'build'}
+                  </span>
+                  <span style={{ fontWeight: 700, fontSize: '15px' }}>Global Platform Maintenance Mode</span>
+                  <span className={`status-badge ${maintenanceMode ? 'badge-degraded' : 'badge-healthy'}`}>
+                    {maintenanceMode ? 'ACTIVE' : 'INACTIVE'}
+                  </span>
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--color-outline)', marginTop: '4px', maxWidth: '650px' }}>
+                  When enabled, all tenant workspaces are placed into read-only mode. Employees and Company Admins will see a maintenance notice and will be prevented from uploading files or modifying data.
+                </div>
+              </div>
+              <button
+                className={`btn-primary ${maintenanceMode ? 'btn-danger' : ''}`}
+                style={{ background: maintenanceMode ? '#ef4444' : '#f59e0b', borderColor: maintenanceMode ? '#ef4444' : '#f59e0b' }}
+                onClick={() => setMaintenanceMode(!maintenanceMode)}
+              >
+                <span className="material-symbols-outlined">{maintenanceMode ? 'check_circle' : 'construction'}</span>
+                {maintenanceMode ? 'Disable Maintenance Mode' : 'Enable Maintenance Mode'}
+              </button>
+            </div>
+
+            {/* Vector Purge Card */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="material-symbols-outlined" style={{ color: '#ef4444' }}>delete_forever</span>
+                  <span style={{ fontWeight: 700, fontSize: '15px', color: '#ef4444' }}>Purge All ChromaDB Vector Collections</span>
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--color-outline)', marginTop: '4px', maxWidth: '650px' }}>
+                  Irreversibly clears all vector embeddings across every company collection. Document raw files remain intact, but re-indexing will be required to restore semantic search and AI chat capabilities.
+                </div>
+              </div>
+              <button
+                className="btn-secondary"
+                style={{ color: '#ef4444', borderColor: '#ef4444' }}
+                onClick={() => setPurgeModalOpen(true)}
+              >
+                <span className="material-symbols-outlined">delete_sweep</span>
+                Purge Collections...
+              </button>
+            </div>
+
+            {/* Reset Factory Settings Card */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', background: 'var(--color-surface)', borderRadius: '12px', border: '1px solid var(--color-outline-variant)' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="material-symbols-outlined" style={{ color: 'var(--color-outline)' }}>restart_alt</span>
+                  <span style={{ fontWeight: 700, fontSize: '15px' }}>Reset Platform Settings</span>
+                </div>
+                <div style={{ fontSize: '13px', color: 'var(--color-outline)', marginTop: '4px', maxWidth: '650px' }}>
+                  Restores global system configuration (LLM models, upload limits, chunk size, session timeouts) back to initial factory deployment values.
+                </div>
+              </div>
+              <button
+                className="btn-secondary"
+                onClick={() => {
+                  setGlobalConfig({
+                    aiModel: 'Gemini 2.0 Flash',
+                    maxUploadSizeMB: '50 MB',
+                    chunkSize: '1000 tokens',
+                    defaultTopK: '5',
+                    authMethod: 'JWT + Refresh Token (HttpOnly)',
+                    encryption: 'bcrypt (12 rounds) + AES-256',
+                    sessionTimeout: '24 hours',
+                    ocrEngine: 'Tesseract 5.0 (Active)',
+                  });
+                  alert('Platform settings restored to factory defaults.');
+                }}
+              >
+                Reset Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal: Register New Tenant ── */}
+      {newTenantModalOpen && (
+        <div className="modal-overlay" onClick={() => setNewTenantModalOpen(false)}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+            <div className="modal-header">
+              <h3 className="modal-title">Provision New Tenant Workspace</h3>
+              <button className="modal-close-btn" onClick={() => setNewTenantModalOpen(false)}>✕</button>
+            </div>
+            <form onSubmit={handleCreateTenant}>
+              <div className="modal-body form-stack">
+                <div className="form-group">
+                  <label>Company / Organization Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Sterling Industrial Systems"
+                    value={newTenantForm.name}
+                    onChange={(e) => setNewTenantForm({ ...newTenantForm, name: e.target.value })}
+                  />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div className="form-group">
+                    <label>Tenant Slug</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="sterling-systems"
+                      value={newTenantForm.slug}
+                      onChange={(e) => setNewTenantForm({ ...newTenantForm, slug: e.target.value })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Company Code</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="STER"
+                      value={newTenantForm.code}
+                      onChange={(e) => setNewTenantForm({ ...newTenantForm, code: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Tenant Tier</label>
+                  <select
+                    value={newTenantForm.tier}
+                    onChange={(e) => setNewTenantForm({ ...newTenantForm, tier: e.target.value })}
+                  >
+                    <option value="Enterprise">Enterprise (Full RAG + 100MB)</option>
+                    <option value="Professional">Professional (Standard RAG)</option>
+                    <option value="Starter">Starter (Basic Search)</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Initial Administrator Email</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="admin@sterling.demo"
+                    value={newTenantForm.adminEmail}
+                    onChange={(e) => setNewTenantForm({ ...newTenantForm, adminEmail: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Initial Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={newTenantForm.password}
+                    onChange={(e) => setNewTenantForm({ ...newTenantForm, password: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer" style={{ padding: '12px 16px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button type="button" className="btn-secondary" onClick={() => setNewTenantModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn-primary" style={{ background: '#a855f7', borderColor: '#a855f7' }}>Provision Tenant</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal: Create Platform User ── */}
+      {newUserModalOpen && (
+        <div className="modal-overlay" onClick={() => setNewUserModalOpen(false)}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
+            <div className="modal-header">
+              <h3 className="modal-title">Create Platform User</h3>
+              <button className="modal-close-btn" onClick={() => setNewUserModalOpen(false)}>✕</button>
+            </div>
+            <form onSubmit={handleCreatePlatformUser}>
+              <div className="modal-body form-stack">
+                <div className="form-group">
+                  <label>User Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Sarah Connor"
+                    value={newUserForm.name}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, name: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="sarah@company.com"
+                    value={newUserForm.email}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Assign Role</label>
+                  <select
+                    value={newUserForm.role}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value })}
+                  >
+                    <option value="Company Admin">Company Admin (Tenant scoped)</option>
+                    <option value="Employee">Employee (Read + Chat)</option>
+                    <option value="Super Admin">Super Admin (Global Platform)</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Assign to Tenant Organization</label>
+                  <select
+                    value={newUserForm.company}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, company: e.target.value })}
+                  >
+                    <option value="Apex Engineering">Apex Engineering (APEX)</option>
+                    <option value="Nova Finance Corp">Nova Finance Corp (NOVA)</option>
+                    <option value="Vertex Manufacturing">Vertex Manufacturing (VERTEX)</option>
+                    <option value="Global Platform">Global Platform (Super Admin only)</option>
+                  </select>
+                </div>
+              </div>
+              <div className="modal-footer" style={{ padding: '12px 16px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button type="button" className="btn-secondary" onClick={() => setNewUserModalOpen(false)}>Cancel</button>
+                <button type="submit" className="btn-primary" style={{ background: '#3b82f6', borderColor: '#3b82f6' }}>Create User</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal: Purge Vector DB Confirmation ── */}
+      {purgeModalOpen && (
+        <div className="modal-overlay" onClick={() => setPurgeModalOpen(false)}>
+          <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px', border: '1px solid #ef4444' }}>
+            <div className="modal-header">
+              <h3 className="modal-title" style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="material-symbols-outlined">warning</span>
+                Confirm Vector DB Purge
+              </h3>
+              <button className="modal-close-btn" onClick={() => setPurgeModalOpen(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <p style={{ fontSize: '13.5px', color: 'var(--color-on-surface)', lineHeight: 1.5 }}>
+                Are you sure you want to purge <strong>all vector embeddings</strong> across every tenant collection in ChromaDB?
+              </p>
+              <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '10px 12px', borderRadius: '8px', fontSize: '12px', color: '#ef4444', marginTop: '12px' }}>
+                ⚠️ This will immediately disable AI Chat retrieval until tenant documents are re-vectorized.
+              </div>
+              {purgeSuccess && (
+                <div style={{ marginTop: '14px', fontSize: '13px', color: '#10b981', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="material-symbols-outlined">sync</span>
+                  Purging vector collections across cluster...
+                </div>
+              )}
+            </div>
+            <div className="modal-footer" style={{ padding: '12px 16px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button type="button" className="btn-secondary" onClick={() => setPurgeModalOpen(false)}>Cancel</button>
+              <button type="button" className="btn-primary" style={{ background: '#ef4444', borderColor: '#ef4444' }} onClick={handleConfirmPurgeVectors} disabled={purgeSuccess}>
+                {purgeSuccess ? 'Purging...' : 'Yes, Purge All Vectors'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {/* ── Close Main Page Content ── */}
       </main>
+
 
       {/* ── Footer ── */}
       <footer className="dashboard-footer">

@@ -12,6 +12,7 @@ This matrix maps out the exact dependencies of every frontend page, helping to d
 | **6. AI Chat** | `POST /api/v1/chat`<br>`GET /chat/sessions/:id` | `chatSessions`, `chatMessages`, ChromaDB | Authenticated | All Roles<br>`chat:use` | Embedding Generation, Vector Search, LLM RAG Generation | **Login**, **Upload Knowledge** (Needs data to search) |
 | **7. Semantic Search** | `POST /api/v1/search/semantic` | `documents`, ChromaDB | Authenticated | All Roles<br>`documents:read` | Vector Search | **Login**, **Upload Knowledge**, **Knowledge Library** |
 | **8. System Settings** | `GET/POST /api/v1/departments`<br>`GET/POST /api/v1/roles`<br>`GET/POST /api/v1/users` | `companies`, `departments`, `roles`, `permissions`, `users` | Authenticated | Admin Role<br>`settings:manage`, `roles:manage`, `users:read`, `users:create`, `users:update`, `users:delete` | None | **Login**, **Admin Overview** |
+| **9. Super Admin Command Center** | `GET /api/v1/companies`<br>`GET /api/v1/users`<br>`GET /api/v1/health` | `companies`, `users`, `documents`, `auditLogs`, ChromaDB | Authenticated | Super Admin Role<br>(Platform-Wide `companyId: null`) | Vector DB Health, Infrastructure Mesh Status | **Login**, **Admin Overview**, **System Settings** |
 
 ---
 

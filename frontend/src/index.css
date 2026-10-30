@@ -464,6 +464,10 @@ body {
   letter-spacing: 0.04em;
 }
 
+.sidebar-role-tag.super-admin {
+  color: #d8b4fe;
+}
+
 .sidebar-role-tag.admin {
   color: #93c5fd;
 }
@@ -472,22 +476,115 @@ body {
   color: #86efac;
 }
 
-.sidebar-role-switch-btn {
-  background: rgba(37, 99, 235, 0.25);
-  border: 1px solid rgba(37, 99, 235, 0.4);
-  color: #bfdbfe;
-  padding: 4px 8px;
+.sidebar-role-selector {
+  display: flex;
+  gap: 3px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.role-tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 5px 4px;
+  background: transparent;
+  border: none;
   border-radius: 6px;
+  color: #94a3b8;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
-  text-align: center;
 }
 
-.sidebar-role-switch-btn:hover {
-  background: rgba(37, 99, 235, 0.45);
+.role-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f1f5f9;
+}
+
+.role-tab-btn.active.super-admin {
+  background: linear-gradient(135deg, #7e22ce, #9333ea);
   color: #ffffff;
+  box-shadow: 0 2px 8px rgba(147, 51, 234, 0.4);
+}
+
+.role-tab-btn.active.company-admin {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+}
+
+.role-tab-btn.active.employee {
+  background: #059669;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4);
+}
+
+/* Login Persona Selection Cards */
+.persona-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.persona-card {
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: 1.5px solid var(--color-outline-variant);
+  background: var(--color-surface);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  user-select: none;
+}
+
+.persona-card:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-container-low);
+}
+
+.persona-card.selected.super-admin {
+  border-color: #a855f7;
+  background: rgba(168, 85, 247, 0.1);
+  box-shadow: 0 0 0 1px #a855f7;
+}
+
+.persona-card.selected.company-admin {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.persona-card.selected.employee {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 1px #10b981;
+}
+
+.persona-icon {
+  font-size: 20px;
+}
+
+.persona-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.persona-subtitle {
+  font-size: 9.5px;
+  color: var(--color-outline);
+  line-height: 1.2;
 }
 
 .sidebar-nav-container {
@@ -549,6 +646,44 @@ body {
 .sidebar-nav-link .material-symbols-outlined {
   font-size: 20px;
   flex-shrink: 0;
+}
+
+/* Super Admin Special Nav Link */
+.sidebar-nav-link.super-admin-link {
+  color: #c084fc;
+  border: 1px solid rgba(192, 132, 252, 0.2);
+  background: rgba(168, 85, 247, 0.08);
+  margin-top: 2px;
+}
+
+.sidebar-nav-link.super-admin-link:hover {
+  background: rgba(168, 85, 247, 0.2);
+  color: #f3e8ff;
+  border-color: rgba(192, 132, 252, 0.4);
+}
+
+.sidebar-nav-link.super-admin-link.active {
+  background: linear-gradient(135deg, #7e22ce, #9333ea);
+  color: #ffffff;
+  border-color: #a855f7;
+  box-shadow: 0 4px 14px rgba(147, 51, 234, 0.45);
+}
+
+/* Super Admin Section Card enhancements */
+.super-admin-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.super-admin-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #a855f7, #6366f1, #3b82f6);
+  opacity: 0.8;
 }
 
 .sidebar-bottom {

@@ -524,21 +524,59 @@ This document provides a precise mapping of every Stitch AI frontend page to the
 - App workspace layout (`.stitch-layout`, `.stitch-main-area`, `.stitch-page-content`).
 
 **Role-Based Visibility Matrix**
-| Navigation Section | Admin Role (Super Admin / Company Admin) | Employee Role |
-| :--- | :---: | :---: |
-| **Admin Overview** (`overview`) | **Visible** | **Hidden** |
-| **Employee Portal** (`employee-portal`) | **Strictly Hidden** | **Visible** |
-| **Semantic Search** (`search`) | **Visible** | **Visible** |
-| **AI Knowledge Chat** (`chat`) | **Visible** | **Visible** |
-| **Knowledge Library** (`library`) | **Visible** | **Visible** |
-| **Upload Knowledge** (`upload`) | **Visible** | **Visible** |
-| **Employees Directory** (`employees`) | **Visible** | **Hidden** |
-| **Knowledge Sources** (`sources`) | **Visible** | **Hidden** |
-| **Settings & Security** (`settings`) | **Visible** | **Hidden** |
+| Navigation Section | Super Admin | Company Admin | Employee Role |
+| :--- | :---: | :---: | :---: |
+| **Admin Overview** (`overview`) | **Visible** | **Visible** | **Hidden** |
+| **Super Admin Platform** (`super-admin`) | **Visible** | **Hidden / Restricted** | **Strictly Hidden** |
+| **Employee Portal** (`employee-portal`) | **Strictly Hidden** | **Strictly Hidden** | **Visible** |
+| **Semantic Search** (`search`) | **Visible** | **Visible** | **Visible** |
+| **AI Knowledge Chat** (`chat`) | **Visible** | **Visible** | **Visible** |
+| **Knowledge Library** (`library`) | **Visible** | **Visible** | **Visible** |
+| **Upload Knowledge** (`upload`) | **Visible** | **Visible** | **Visible** |
+| **Employees Directory** (`employees`) | **Visible** | **Visible** | **Hidden** |
+| **Knowledge Sources** (`sources`) | **Visible** | **Visible** | **Hidden** |
+| **Settings & Security** (`settings`) | **Visible** | **Visible** | **Hidden** |
 
 **Access Enforcement Rules**
 - When user is in Admin mode, `employee-portal` is strictly excluded from sidebar and any navigation attempts redirect to `overview`.
-- When user is in Employee mode, administrative tools (`overview`, `employees`, `sources`, `settings`) are strictly excluded from sidebar and any navigation attempts redirect to `employee-portal`.
+- When user is in Employee mode, administrative tools (`overview`, `employees`, `sources`, `settings`, `super-admin`) are strictly excluded from sidebar and any navigation attempts redirect to `employee-portal`.
+- Super Admin console is accessible via the `PLATFORM` nav group with dedicated security badges, guarded by `isSuperAdmin && isAdmin`.
 - Interactive mode switcher pill allows testing both views directly in the UI.
+
+---
+
+## 11. Super Admin Platform Control Suite
+
+**Role Scope**: `Super Admin` (`superadmin@platform.ai`, `companyId: null`)
+**Sidebar Isolation Rule**: When in Super Admin mode, the sidebar displays **ONLY** platform control actions and hides all company/tenant workspace links (`overview`, `employee-portal`, `search`, `chat`, `library`, `upload`, `employees`, `sources`, `settings`).
+
+### Dedicated Functional Routes:
+1. **Command Center (`super-admin`)**:
+   - Hero summary with KPI metrics (Total Tenants, Platform Users, Global Documents, Total Vectors, Mesh Health, Platform State).
+   - Quick platform actions to register tenant, create platform user, export audit reports, and inspect mesh health.
+2. **Tenant Workspaces (`sa-tenants`)**:
+   - Filterable & searchable multi-tenant directory with active/suspended status indicators.
+   - **Interactive Modal**: "Provision New Tenant" modal with validation, plan assignment, admin email, and live addition to active tenant list.
+   - Live status toggling (Active ↔ Suspended).
+3. **Platform Users (`sa-users`)**:
+   - Cross-tenant user directory with role badges (`Super Admin`, `Company Admin`, `Employee`) and company tags.
+   - **Interactive Modal**: "Create Platform User" modal with automated audit logging.
+   - Live actions: Quick Password Reset dispatch and account status toggle.
+4. **Service Mesh Health (`sa-infrastructure`)**:
+   - Service nodes: Node.js API Gateway, FastAPI AI Engine, MongoDB Atlas, ChromaDB Vector Store.
+   - **Live Mesh Probe**: "Trigger Deep Mesh Probe" button that performs live round-trip probe against `/api/v1/health`, calculates real-time latency (ms), and renders the raw service telemetry JSON.
+5. **Global Platform Settings (`sa-config`)**:
+   - Live editable configuration: Default AI LLM model (`gemini-2.5-flash`), Max Document Upload Size (MB), Default Vector Chunk Size, Retrieval Top-K, Platform Session Timeout, and OCR Preprocessing Engine.
+   - Functional "Save Platform Configuration" with persistent state and audit log dispatch.
+6. **Platform Audit Trail (`sa-audit`)**:
+   - Real-time audit log stream tracking all administrative actions (user status changes, config updates, tenant provisioning, vector purges).
+   - Real-time search filter by actor, action type, or target resource.
+   - **Export Feature**: Functional "Export Audit Trail (JSON)" button triggering a formatted client-side file download.
+7. **Danger Zone (`sa-danger`)**:
+   - **Global Maintenance Mode**: Interactive switch toggling platform maintenance mode, displaying a persistent amber/red alert banner across the entire application.
+   - **Vector Purge**: Interactive confirmation modal for ChromaDB vector wipe and re-initialization.
+   - **Factory Reset**: Revert platform configurations to factory defaults.
+
+
 
 

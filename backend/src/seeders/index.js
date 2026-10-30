@@ -2,6 +2,7 @@ const { seedPermissions, permissionsData } = require('./permissionSeeder');
 const { seedRoles, defaultRoles } = require('./roleSeeder');
 const { seedCompanies, companiesData } = require('./companySeeder');
 const { seedDepartments, departmentsByCompany } = require('./departmentSeeder');
+const { seedUsers } = require('./userSeeder');
 
 module.exports = {
   seedPermissions,
@@ -12,4 +13,5 @@ module.exports = {
   companiesData,
   seedDepartments,
   departmentsByCompany,
+  seedUsers,
 };

@@ -13,9 +13,29 @@ Security is built into every layer of the platform, focusing heavily on multi-te
 - **Repository Enforcement**: `BaseRepository` forces `{ companyId }` as the first argument in every query.
 - **ChromaDB**: Each company has an isolated physical collection (`company_{companyId}`).
 
-## Role-Based Access Control (RBAC)
-- **Dynamic Roles**: Companies can create custom roles mapped to specific permissions (e.g., `documents:upload`, `users:create`).
-- **Middleware Check**: The `authorize(permission)` middleware looks up the user's `roleId` and checks against assigned permissions.
+## Role-Based Access Control (RBAC) & 3 Core Personas
+The system defines 3 distinct core roles, with strict scoping and visibility enforcement:
+
+1. **Super Admin (Platform-Wide)**:
+   - **Credentials**: `superadmin@platform.ai` / `Password123!`
+   - **Scope**: Platform-wide (`companyId: null`).
+   - **Privileges**: Full wildcard permissions (`*`). Access to the **Super Admin Platform Command Center**, cross-tenant metrics, tenant provisioning, platform user management, service mesh health, and platform configuration.
+   - **UI Views**: `super-admin`, `overview`, `employees`, `sources`, `settings`, `library`, `search`, `chat`, `upload`. Strictly excluded from `employee-portal`.
+
+2. **Company Admin (Tenant-Scoped)**:
+   - **Credentials**: `admin@apexengineering.demo` / `Password123!` (Slug: `apex-engineering`)
+   - **Scope**: Single tenant (`companyId: <company_id>`).
+   - **Privileges**: Tenant-scoped administrative rights (`documents:*`, `users:*`, `departments:*`, `settings:manage`, `knowledge-sources:*`).
+   - **UI Views**: `overview`, `employees`, `sources`, `settings`, `library`, `search`, `chat`, `upload`. Strictly excluded from `super-admin` (only platform admins) and `employee-portal`.
+
+3. **Employee (Tenant-Scoped End-User)**:
+   - **Credentials**: `employee@apexengineering.demo` / `Password123!` (Slug: `apex-engineering`)
+   - **Scope**: Department/tenant standard access.
+   - **Privileges**: Read rights and AI chat capability (`documents:read`, `chat:use`, `knowledge-sources:read`).
+   - **UI Views**: `employee-portal`, `library`, `search`, `chat`, `upload`. Strictly excluded from `super-admin`, `overview`, `employees`, `sources`, and `settings`.
+
+- **Dynamic Roles**: Companies can also create custom tenant-specific roles mapped to granular permissions.
+- **Middleware Check**: The `authorize(permission)` middleware looks up the user's `roleId` and checks against assigned permissions. Super Admin bypasses tenant constraints.
 
 ## Document Authorization (5-Step Flow)
 Before the RAG pipeline queries ChromaDB, the backend verifies:
