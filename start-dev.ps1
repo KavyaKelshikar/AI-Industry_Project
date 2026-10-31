@@ -1,9 +1,9 @@
-# Stitch AI Platform - Unified Development Startup Script
+# InsightX - AI-Powered Industrial Knowledge System Startup Script
 # Usage: .\start-dev.ps1
 
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Cyan
-Write-Host "       STITCH AI PLATFORM - UNIFIED STARTUP ENGINE              " -ForegroundColor Cyan
+Write-Host "   INSIGHTX AI-POWERED INDUSTRIAL KNOWLEDGE SYSTEM STARTUP       " -ForegroundColor Cyan
 Write-Host "================================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -92,7 +92,7 @@ try {
 # Final Status Summary Matrix
 Write-Host ""
 Write-Host "================================================================" -ForegroundColor Cyan
-Write-Host "              STITCH AI INTEGRATED PLATFORM STATUS              " -ForegroundColor Cyan
+Write-Host "            INSIGHTX INTEGRATED PLATFORM STATUS                 " -ForegroundColor Cyan
 Write-Host "================================================================" -ForegroundColor Cyan
 Write-Host ""
 

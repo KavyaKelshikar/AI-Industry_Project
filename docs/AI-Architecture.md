@@ -97,8 +97,9 @@ The `retrieval` package (`src/retrieval/`) provides tenant-isolated semantic sea
 
 ### 3. LLM Generation & Fallback Layer (`ai-service/src/llm/`)
 - **`GeminiLLMClient`**: Google Gemini API client (model set by `GEMINI_MODEL`, default `gemini-3.5-flash`) operating at low temperature (`0.1`) for factual precision.
+- **`GroqLLMClient`**: Groq cloud API client (model set by `GROQ_MODEL`, default `llama-3.3-70b-versatile`) using their OpenAI-compatible REST API. Free tier with 14,400 requests/day and extremely fast inference.
 - **`DeterministicGroundingLLMClient`**: Deterministic offline grounding fallback used when API keys are absent or during isolated test verification.
-- **Client Factory (`get_llm_client()`)**: Resolves active provider based on environment credentials.
+- **Client Factory (`get_llm_client()`)**: Resolves active provider based on environment credentials. Priority: Groq → Gemini → Deterministic fallback.
 
 ### 4. RAG Pipeline Orchestrator (`ai-service/src/retrieval/rag_pipeline.py`)
 - **`RAGPipeline.execute_rag()`**: Coordinates retrieval, citation construction, prompt assembly, and answer synthesis.
@@ -108,6 +109,6 @@ The `retrieval` package (`src/retrieval/`) provides tenant-isolated semantic sea
 ## Future AI Roadmap
 The architecture is modularized to support future additions:
 - **OCR**: Adding `TesseractExtractor` to the `ExtractorFactory`.
-- **Multiple LLMs**: The `LLMService` is abstracted to easily swap Gemini for OpenAI, Groq, or local Ollama models.
+- **Multiple LLMs**: The `LLMService` supports Gemini and Groq providers, and is abstracted to easily add OpenAI or local Ollama models.
 - **Knowledge Graphs**: Future integration points in the `retrievers/` module.
 

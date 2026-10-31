@@ -1,6 +1,6 @@
-# Enterprise AI Knowledge Management Platform
+# InsightX — AI-Powered Industrial Knowledge System
 
-An enterprise-grade, multi-tenant AI Document Intelligence and Knowledge Management platform.
+An enterprise-grade, multi-tenant AI Document Intelligence and Industrial Knowledge System.
 
 Please see the `docs/` directory for complete documentation:
 - `docs/README.md`

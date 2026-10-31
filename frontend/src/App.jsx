@@ -129,7 +129,7 @@ export default function App() {
 
   const [saAuditLogsList, setSaAuditLogsList] = useState([
     { id: 'aud-1', time: 'Just now', actor: 'superadmin@platform.ai', action: 'SYSTEM_SETTINGS_UPDATE', target: 'Global AI Model & Limits', ip: '127.0.0.1', status: 'SUCCESS' },
-    { id: 'aud-2', time: '14 mins ago', actor: 'superadmin@platform.ai', action: 'TENANT_HEALTH_CHECK', target: 'Service Mesh Probe', ip: '127.0.0.1', status: 'SUCCESS' },
+    { id: 'aud-2', time: '14 mins ago', actor: 'superadmin@platform.ai', action: 'TENANT_HEALTH_CHECK', target: 'System Health Probe', ip: '127.0.0.1', status: 'SUCCESS' },
     { id: 'aud-3', time: '1 hr ago', actor: 'admin@apexengineering.demo', action: 'DOCUMENT_INGESTION', target: 'Safety_Manual_v2.pdf', ip: '192.168.1.42', status: 'SUCCESS' },
     { id: 'aud-4', time: '2 hrs ago', actor: 'admin@vertexmfg.demo', action: 'AUTH_LOGIN_FAILED', target: 'Invalid password attempt', ip: '10.0.0.8', status: 'WARN' },
     { id: 'aud-5', time: '4 hrs ago', actor: 'system_cron', action: 'CHROMA_VECTOR_INDEX_SYNC', target: 'Global Collection Synced', ip: 'internal', status: 'SUCCESS' },
@@ -1299,15 +1299,15 @@ export default function App() {
           <div 
             className="sidebar-brand-wrapper" 
             onClick={() => setCurrentSection(isAdmin ? 'overview' : 'employee-portal')}
-            title="Industrial Intelligence Home"
+            title="InsightX Industrial Knowledge Home"
           >
             <div className="sidebar-brand-logo">
               <span className="material-symbols-outlined" style={{ fontSize: '22px' }}>factory</span>
             </div>
             {!sidebarCollapsed && (
               <div className="sidebar-brand-text">
-                <span className="sidebar-brand-title">STITCH AI</span>
-                <span className="sidebar-brand-sub">Industrial Intel</span>
+                <span className="sidebar-brand-title">INSIGHTX</span>
+                <span className="sidebar-brand-sub">Industrial AI</span>
               </div>
             )}
           </div>
@@ -1414,10 +1414,10 @@ export default function App() {
                 type="button"
                 className={`sidebar-nav-link super-admin-link ${currentSection === 'sa-infrastructure' ? 'active' : ''}`}
                 onClick={() => setCurrentSection('sa-infrastructure')}
-                title="Service Mesh & Cluster Health"
+                title="System Health & Infrastructure"
               >
-                <span className="material-symbols-outlined">dns</span>
-                {!sidebarCollapsed && <span>Service Mesh</span>}
+                <span className="material-symbols-outlined">health_and_safety</span>
+                {!sidebarCollapsed && <span>System Health</span>}
               </button>
 
               <button
@@ -1644,7 +1644,7 @@ export default function App() {
               {currentSection === 'super-admin' && 'Platform Command Center'}
               {currentSection === 'sa-tenants' && 'Tenant Workspaces & Organizations'}
               {currentSection === 'sa-users' && 'Cross-Tenant Platform Users'}
-              {currentSection === 'sa-infrastructure' && 'Service Mesh & Infrastructure Health'}
+              {currentSection === 'sa-infrastructure' && 'System Health & Infrastructure'}
               {currentSection === 'sa-config' && 'Global System Configuration'}
               {currentSection === 'sa-audit' && 'Platform Audit Trail & Security Compliance'}
               {currentSection === 'sa-danger' && 'Danger Zone & Maintenance Controls'}
@@ -2410,7 +2410,7 @@ export default function App() {
                 <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>smart_toy</span>
               </div>
               <div>
-                <h2 className="panel-title" style={{ margin: 0 }}>Industrial Intelligence AI Assistant</h2>
+                <h2 className="panel-title" style={{ margin: 0 }}>InsightX AI Assistant</h2>
                 <p className="brand-subtitle">Grounded semantic retrieval &amp; Q&amp;A powered by ChromaDB vectors</p>
               </div>
             </div>
@@ -2487,7 +2487,7 @@ export default function App() {
                   <div className="rag-empty-state">
                     <div className="rag-empty-icon">🧠</div>
                     <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-on-surface)', marginBottom: '8px' }}>
-                      How can I help with industrial intelligence today?
+                      How can InsightX help you today?
                     </h3>
                     <p style={{ maxWidth: '520px', fontSize: '13px', lineHeight: 1.5 }}>
                       Ask questions about company indexed documents, equipment maintenance SOPs, OSHA compliance, or plant safety policies.
@@ -3253,7 +3253,7 @@ export default function App() {
         <div className="modal-overlay" onClick={() => setAuthModalOpen(false)}>
           <div className="modal-dialog" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '440px' }}>
             <div className="modal-header">
-              <h3 className="modal-title">{activeTab === 'login' ? 'Sign In to Industrial Intelligence' : 'Register New Company Workspace'}</h3>
+              <h3 className="modal-title">{activeTab === 'login' ? 'Sign In to InsightX' : 'Register New Company Workspace'}</h3>
               <button className="modal-close-btn" onClick={() => setAuthModalOpen(false)}>✕</button>
             </div>
             <div className="modal-body">
@@ -3789,9 +3789,9 @@ export default function App() {
 
             <div className="stat-card" style={{ borderTop: '3px solid #06b6d4', cursor: 'pointer' }} onClick={() => setCurrentSection('sa-infrastructure')}>
               <div className="stat-header">
-                <span className="stat-label">Service Mesh</span>
+                <span className="stat-label">System Health</span>
                 <div className="stat-icon-wrap" style={{ background: '#cffafe', color: '#0891b2' }}>
-                  <span className="material-symbols-outlined">dns</span>
+                  <span className="material-symbols-outlined">health_and_safety</span>
                 </div>
               </div>
               <div className="stat-value" style={{ color: '#06b6d4' }}>4 / 4</div>
@@ -4156,12 +4156,12 @@ export default function App() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
             <div>
-              <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)' }}>Service Mesh &amp; Infrastructure Health</h2>
+              <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 700, color: 'var(--color-on-surface)' }}>System Health &amp; Infrastructure</h2>
               <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-outline)' }}>Live telemetry and status monitoring for all distributed backend microservices and vector databases.</p>
             </div>
             <button className="btn-primary" style={{ background: '#06b6d4', borderColor: '#06b6d4' }} onClick={handleRunMeshProbe} disabled={probeLoading}>
               <span className="material-symbols-outlined">{probeLoading ? 'sync' : 'network_ping'}</span>
-              {probeLoading ? 'Probing Services...' : 'Trigger Deep Mesh Probe'}
+              {probeLoading ? 'Probing Services...' : 'Run Live Health Probe'}
             </button>
           </div>
 
@@ -4728,7 +4728,7 @@ export default function App() {
 
       {/* ── Footer ── */}
       <footer className="dashboard-footer">
-        <span>Stitch AI Industrial Knowledge Intelligence — Enterprise Release</span>
+        <span>InsightX AI-Powered Industrial Knowledge System — Enterprise Release</span>
         <span>Environment: <strong>Production Ready (v2.4)</strong></span>
       </footer>
     </div>

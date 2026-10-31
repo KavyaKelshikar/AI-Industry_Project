@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const DocumentRepository = require('../repositories/DocumentRepository');
 const KnowledgeSourceRepository = require('../repositories/KnowledgeSourceRepository');
@@ -356,7 +357,7 @@ class DocumentProcessingService {
       };
 
       const newDoc = await DocumentRepository.create(docPayload, scope);
-      createdDocs.push(this._formatDocumentResponse(newDoc));
+      createdDocs.push(this._sanitizeDocument(newDoc));
 
       try {
         await AuditLog.create({

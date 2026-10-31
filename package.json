@@ -1,7 +1,7 @@
 {
-  "name": "stitch-ai-platform",
+  "name": "insightx-industrial-knowledge-system",
   "version": "1.0.0",
-  "description": "Multi-Tenant Industrial Knowledge & Intelligence Platform",
+  "description": "InsightX - AI-Powered Industrial Knowledge System",
   "scripts": {
     "dev": "powershell -ExecutionPolicy Bypass -File ./start-dev.ps1",
     "test:backend": "npm test --prefix backend",

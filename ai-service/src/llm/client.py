@@ -1,6 +1,6 @@
 """
 LLM Provider Abstraction Layer for Enterprise RAG.
-Supports Google Gemini with resilient timeouts, credential sanitization,
+Supports Google Gemini and Groq with resilient timeouts, credential sanitization,
 and a deterministic grounding fallback for testing/offline environments.
 """
 
@@ -188,6 +188,109 @@ class GeminiLLMClient(BaseLLMClient):
             raise LLMError(f"Unexpected error during LLM generation: {safe_err}", original_error=exc)
 
 
+class GroqLLMClient(BaseLLMClient):
+    """
+    Groq LLM provider using their OpenAI-compatible REST API.
+    Offers extremely fast inference with generous free tier (14,400 req/day).
+    """
+
+    GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model_name: Optional[str] = None,
+        timeout_seconds: float = 30.0,
+    ):
+        self._api_key = api_key if api_key is not None else settings.GROQ_API_KEY
+        self.model_name = model_name or settings.GROQ_MODEL
+        self.timeout_seconds = timeout_seconds
+
+    @property
+    def provider_name(self) -> str:
+        return f"groq ({self.model_name})"
+
+    def is_available(self) -> bool:
+        return bool(self._api_key and str(self._api_key).strip())
+
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        temperature: float = 0.2,
+        max_tokens: int = 1024,
+    ) -> str:
+        if not self.is_available():
+            raise LLMProviderUnavailableError("Groq API key is not configured or is empty")
+
+        clean_api_key = str(self._api_key).strip()
+
+        messages: List[Dict[str, str]] = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        payload: Dict[str, Any] = {
+            "model": self.model_name,
+            "messages": messages,
+            "temperature": max(0.0, min(1.0, temperature)),
+            "max_tokens": max(10, min(4096, max_tokens)),
+        }
+
+        start_time = time.perf_counter()
+        try:
+            with httpx.Client(timeout=self.timeout_seconds) as client:
+                response = client.post(
+                    self.GROQ_API_URL,
+                    json=payload,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Authorization": f"Bearer {clean_api_key}",
+                    },
+                )
+
+            if response.status_code != 200:
+                sanitized_msg = f"Groq API returned HTTP {response.status_code}"
+                try:
+                    err_json = response.json()
+                    if "error" in err_json and "message" in err_json["error"]:
+                        sanitized_msg += f": {err_json['error']['message']}"
+                except Exception:
+                    pass
+
+                sanitized_msg = sanitized_msg.replace(clean_api_key, "[REDACTED_API_KEY]")
+                logger.error("Groq API error: %s", sanitized_msg)
+                raise LLMError(f"LLM generation failed: {sanitized_msg}")
+
+            data = response.json()
+            choices = data.get("choices", [])
+            if not choices:
+                logger.warning("Groq returned empty choices list")
+                return "The available company documentation does not provide enough information to answer this question."
+
+            ans_text = choices[0].get("message", {}).get("content", "").strip()
+            if not ans_text:
+                return "The available company documentation does not provide enough information to answer this question."
+
+            elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
+            logger.info("Groq generation completed in %sms", elapsed_ms)
+            return ans_text
+
+        except httpx.TimeoutException as exc:
+            logger.error("Groq API call timed out after %ss", self.timeout_seconds)
+            raise LLMError(f"LLM request timed out after {self.timeout_seconds}s", original_error=exc)
+        except httpx.RequestError as exc:
+            safe_err = str(exc).replace(clean_api_key, "[REDACTED]")
+            logger.error("Groq request network error: %s", safe_err)
+            raise LLMProviderUnavailableError(f"LLM network communication failed: {safe_err}", original_error=exc)
+        except LLMError:
+            raise
+        except Exception as exc:
+            safe_err = str(exc).replace(clean_api_key, "[REDACTED]")
+            logger.error("Unexpected error in Groq generation: %s", safe_err)
+            raise LLMError(f"Unexpected error during LLM generation: {safe_err}", original_error=exc)
+
+
 class DeterministicGroundingLLMClient(BaseLLMClient):
     """
     Deterministic factual extractor and summarizer used when external LLM
@@ -263,8 +366,7 @@ _global_llm_client: Optional[BaseLLMClient] = None
 def get_llm_client(force_gemini: bool = False, force_deterministic: bool = False) -> BaseLLMClient:
     """
     Obtain the configured LLM client instance.
-    If Gemini API key is configured and available, returns GeminiLLMClient;
-    otherwise gracefully falls back to DeterministicGroundingLLMClient.
+    Priority: Groq (if key set) → Gemini (if key set) → Deterministic fallback.
     """
     global _global_llm_client
 
@@ -275,12 +377,22 @@ def get_llm_client(force_gemini: bool = False, force_deterministic: bool = False
         return GeminiLLMClient()
 
     if _global_llm_client is None:
-        raw_key = (settings.GEMINI_API_KEY or "").strip()
-        if raw_key and not raw_key.startswith("your_"):
+        # Priority 1: Groq
+        groq_key = (settings.GROQ_API_KEY or "").strip()
+        if groq_key and not groq_key.startswith("your_"):
+            logger.info("Initializing Groq LLM provider")
+            _global_llm_client = GroqLLMClient()
+            return _global_llm_client
+
+        # Priority 2: Gemini
+        gemini_key = (settings.GEMINI_API_KEY or "").strip()
+        if gemini_key and not gemini_key.startswith("your_"):
             logger.info("Initializing Gemini LLM provider")
             _global_llm_client = GeminiLLMClient()
-        else:
-            logger.info("GEMINI_API_KEY not set or is placeholder; using deterministic grounding engine")
-            _global_llm_client = DeterministicGroundingLLMClient()
+            return _global_llm_client
+
+        # Priority 3: Deterministic fallback
+        logger.info("No LLM API key configured; using deterministic grounding engine")
+        _global_llm_client = DeterministicGroundingLLMClient()
 
     return _global_llm_client

@@ -11,7 +11,8 @@ const refreshTokenSchema = new mongoose.Schema(
     companyId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Company',
-      required: [true, 'Company ID is required'],
+      required: false, // Super Admin has companyId: null
+      default: null,
       index: true,
     },
     tokenHash: {

@@ -39,6 +39,10 @@ class Settings:
     # confirm availability at https://ai.google.dev/gemini-api/docs/deprecations
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 
+    # Groq LLM (alternative provider — free tier with fast inference)
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+
     # Vector Database
     CHROMADB_HOST: str = os.getenv("CHROMADB_HOST", "localhost")
     CHROMADB_PORT: int = int(os.getenv("CHROMADB_PORT", "8000"))

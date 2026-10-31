@@ -36,7 +36,7 @@ const seedUsers = async () => {
         employeeId: 'SA-001',
       },
       {
-        email: 'admin@apexengineering.demo',
+        email: 'admin@apexengineering.com',
         name: 'Apex Company Admin',
         roleId: companyAdminRole._id,
         companyId: defaultCompany ? defaultCompany._id : null,
@@ -45,7 +45,7 @@ const seedUsers = async () => {
         employeeId: 'CA-001',
       },
       {
-        email: 'employee@apexengineering.demo',
+        email: 'employee@apexengineering.com',
         name: 'Alex Engineer',
         roleId: employeeRole._id,
         companyId: defaultCompany ? defaultCompany._id : null,

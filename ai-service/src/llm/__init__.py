@@ -6,6 +6,7 @@ from src.llm.client import (
     BaseLLMClient,
     DeterministicGroundingLLMClient,
     GeminiLLMClient,
+    GroqLLMClient,
     LLMError,
     LLMProviderUnavailableError,
     get_llm_client,
@@ -14,6 +15,7 @@ from src.llm.client import (
 __all__ = [
     "BaseLLMClient",
     "GeminiLLMClient",
+    "GroqLLMClient",
     "DeterministicGroundingLLMClient",
     "LLMError",
     "LLMProviderUnavailableError",
